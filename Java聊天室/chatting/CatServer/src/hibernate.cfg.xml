@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- 配置 hibernate 的基本属性 -->
+
+        <!-- 方言 -->
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property>
+
+        <!-- 是否显示及格式化 SQL -->
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.format_sql">true</property>
+
+        <!-- 生成数据表的策略 -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+        <!--<property name="connection.url">jdbc:mysql://localhost:3306/chatit</property>-->
+        <property name="connection.url">jdbc:mysql://localhost:3306/test</property>
+        <property name="connection.username">root</property>
+        <property name="connection.password">root</property>
+        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+
+        <mapping class="cat.function.ChatHistoryBean"/>
+        <mapping class="cat.function.UserBean"/>
+        <mapping class="cat.function.FriendBean"/>
+        <!-- 二级缓存相关 -->
+
+    </session-factory>
+
+</hibernate-configuration>

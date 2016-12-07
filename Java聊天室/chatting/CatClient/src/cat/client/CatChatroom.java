@@ -33,711 +33,920 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.AbstractListModel;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import cat.dao.HibernateDao;
 import cat.function.CatBean;
+import cat.function.FriendBean;
+import cat.function.UserBean;
+import cat.history.ChatHistory;
 import cat.util.CatUtil;
 
 class CellRenderer extends JLabel implements ListCellRenderer {
-	CellRenderer() {
-		setOpaque(true);
-	}
+    CellRenderer() {
+        setOpaque(true);
+    }
 
-	public Component getListCellRendererComponent(JList list, Object value,
-			int index, boolean isSelected, boolean cellHasFocus) {
+    public Component getListCellRendererComponent(JList list, Object value,
+                                                  int index, boolean isSelected, boolean cellHasFocus) {
 
-		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));// ¼ÓÈë¿í¶ÈÎª5µÄ¿Õ°×±ß¿ò
+        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));// åŠ å…¥å®½åº¦ä¸º5çš„ç©ºç™½è¾¹æ¡†
 
-		if (value != null) {
-			setText(value.toString());
-			setIcon(new ImageIcon("images//1.jpg"));
-		}
-		if (isSelected) {
-			setBackground(new Color(255, 255, 153));// ÉèÖÃ±³¾°É«
-			setForeground(Color.black);
-		} else {
-			// ÉèÖÃÑ¡È¡ÓëÈ¡ÏûÑ¡È¡µÄÇ°¾°Óë±³¾°ÑÕÉ«.
-			setBackground(Color.white); // ÉèÖÃ±³¾°É«
-			setForeground(Color.black);
-		}
-		setEnabled(list.isEnabled());
-		setFont(new Font("sdf", Font.ROMAN_BASELINE, 13));
-		setOpaque(true);
-		return this;
-	}
+        if (value != null) {
+            setText(value.toString());
+            //æ˜¯å¦è¦åŠ å…¥å›¾ç‰‡
+//            setIcon(new ImageIcon("images//1.jpg"));
+        }
+        if (isSelected) {
+            setBackground(new Color(255, 255, 153));// è®¾ç½®èƒŒæ™¯è‰²
+            setForeground(Color.black);
+        } else {
+            // è®¾ç½®é€‰å–ä¸å–æ¶ˆé€‰å–çš„å‰æ™¯ä¸èƒŒæ™¯é¢œè‰².
+            setBackground(Color.white); // è®¾ç½®èƒŒæ™¯è‰²
+            setForeground(Color.black);
+        }
+        setEnabled(list.isEnabled());
+        setFont(new Font("sdf", Font.ROMAN_BASELINE, 13));
+        setOpaque(true);
+        return this;
+    }
 }
 
 class UUListModel extends AbstractListModel {
 
-	private Vector vs;
+    private Vector vs;
 
-	public UUListModel(Vector vs) {
-		this.vs = vs;
-	}
+    public UUListModel(Vector vs) {
+        this.vs = vs;
+    }
 
-	@Override
-	public Object getElementAt(int index) {
-		// TODO Auto-generated method stub
-		return vs.get(index);
-	}
+    @Override
+    public Object getElementAt(int index) {
+        // TODO Auto-generated method stub
+        return vs.get(index);
+    }
 
-	@Override
-	public int getSize() {
-		// TODO Auto-generated method stub
-		return vs.size();
-	}
+    @Override
+    public int getSize() {
+        // TODO Auto-generated method stub
+        return vs.size();
+    }
 
 }
 
 public class CatChatroom extends JFrame {
 
-	private static final long serialVersionUID = 6129126482250125466L;
-
-	private static JPanel contentPane;
-	private static Socket clientSocket;
-	private static ObjectOutputStream oos;
-	private static ObjectInputStream ois;
-	private static String name;
-	private static JTextArea textArea;
-	private static AbstractListModel listmodel;
-	private static JList list;
-	private static String filePath;
-	private static JLabel lblNewLabel;
-	private static JProgressBar progressBar;
-	private static Vector onlines;
-	private static boolean isSendFile = false;
-	private static boolean isReceiveFile = false;
-
-	// ÉùÒô
-	private static File file, file2;
-	private static URL cb, cb2;
-	private static AudioClip aau, aau2;
-
-	/**
-	 * Create the frame.
-	 */
-
-	public CatChatroom(String u_name, Socket client) {
-		// ¸³Öµ
-		name = u_name;
-		clientSocket = client;
-		onlines = new Vector();
-
-		SwingUtilities.updateComponentTreeUI(this);
-
-		try {
-			UIManager
-					.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (InstantiationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IllegalAccessException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-		setTitle(name);
-		setResizable(false);
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		setBounds(200, 100, 688, 510);
-		contentPane = new JPanel() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				g.drawImage(new ImageIcon("images\\77.jpg").getImage(), 0, 0,
-						getWidth(), getHeight(), null);
-			}
-
-		};
-		setContentPane(contentPane);
-		contentPane.setLayout(null);
-
-		// ÁÄÌìĞÅÏ¢ÏÔÊ¾ÇøÓò
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 10, 410, 300);
-		getContentPane().add(scrollPane);
-
-		textArea = new JTextArea();
-		textArea.setEditable(false);
-		textArea.setLineWrap(true);// ¼¤»î×Ô¶¯»»ĞĞ¹¦ÄÜ
-		textArea.setWrapStyleWord(true);// ¼¤»î¶ÏĞĞ²»¶Ï×Ö¹¦ÄÜ
-		textArea.setFont(new Font("sdf", Font.BOLD, 13));
-		scrollPane.setViewportView(textArea);
-
-		// ´ò×ÖÇøÓò
-		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(10, 347, 411, 97);
-		getContentPane().add(scrollPane_1);
-
-		final JTextArea textArea_1 = new JTextArea();
-		textArea_1.setLineWrap(true);// ¼¤»î×Ô¶¯»»ĞĞ¹¦ÄÜ
-		textArea_1.setWrapStyleWord(true);// ¼¤»î¶ÏĞĞ²»¶Ï×Ö¹¦ÄÜ
-		scrollPane_1.setViewportView(textArea_1);
-
-		// ¹Ø±Õ°´Å¥
-		final JButton btnNewButton = new JButton("\u5173\u95ED");
-		btnNewButton.setBounds(214, 448, 60, 30);
-		getContentPane().add(btnNewButton);
-
-		// ·¢ËÍ°´Å¥
-		JButton btnNewButton_1 = new JButton("\u53D1\u9001");
-		btnNewButton_1.setBounds(313, 448, 60, 30);
-		getRootPane().setDefaultButton(btnNewButton_1);
-		getContentPane().add(btnNewButton_1);
-
-		// ÔÚÏß¿Í»§ÁĞ±í
-		listmodel = new UUListModel(onlines);
-		list = new JList(listmodel);
-		list.setCellRenderer(new CellRenderer());
-		list.setOpaque(false);
-		Border etch = BorderFactory.createEtchedBorder();
-		list.setBorder(BorderFactory.createTitledBorder(etch, "ÔÚÏß¿Í»§:", TitledBorder.LEADING, TitledBorder.TOP,
-				new Font("sdf", Font.BOLD, 18), Color.red));
-
-		JScrollPane scrollPane_2 = new JScrollPane(list);
-		scrollPane_2.setBounds(430, 10, 245, 375);
-		scrollPane_2.setOpaque(false);
-		scrollPane_2.getViewport().setOpaque(false);
-		getContentPane().add(scrollPane_2);
-
-		// ÎÄ¼ş´«ÊäÀ¸
-		progressBar = new JProgressBar();
-		progressBar.setBounds(430, 390, 245, 15);
-		progressBar.setMinimum(1);
-		progressBar.setMaximum(100);
-		getContentPane().add(progressBar);
-
-		// ÎÄ¼ş´«ÊäÌáÊ¾
-		lblNewLabel = new JLabel("");
-		lblNewLabel.setFont(new Font("SimSun", Font.PLAIN, 12));
-		lblNewLabel.setBackground(Color.WHITE);
-		lblNewLabel.setBounds(430, 410, 245, 15);
-		getContentPane().add(lblNewLabel);
-
-		try {
-			oos = new ObjectOutputStream(clientSocket.getOutputStream());
-			// ¼ÇÂ¼ÉÏÏß¿Í»§µÄĞÅÏ¢ÔÚcatbeanÖĞ£¬²¢·¢ËÍ¸ø·şÎñÆ÷
-			CatBean bean = new CatBean();
-			bean.setType(0);
-			bean.setName(name);
-			bean.setTimer(CatUtil.getTimer());
-			oos.writeObject(bean);
-			oos.flush();
-
-			// ÏûÏ¢ÌáÊ¾ÉùÒô
-			file = new File("sounds\\ßÀÅ·.wav");
-			cb = file.toURL();
-			aau = Applet.newAudioClip(cb);
-			// ÉÏÏßÌáÊ¾ÉùÒô
-			file2 = new File("sounds\\¶£.wav");
-			cb2 = file2.toURL();
-			aau2 = Applet.newAudioClip(cb2);
-
-			// Æô¶¯¿Í»§½ÓÊÕÏß³Ì
-			new ClientInputThread().start();
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		// ·¢ËÍ°´Å¥
-		btnNewButton_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String info = textArea_1.getText();
-				List to = list.getSelectedValuesList();
-
-				if (to.size() < 1) {
-					JOptionPane.showMessageDialog(getContentPane(), "ÇëÑ¡ÔñÁÄÌì¶ÔÏó");
-					return;
-				}
-				if (to.toString().contains(name + "(ÎÒ)")) {
-					CatBean clientBean = new CatBean();
-					clientBean.setType(5);
-					clientBean.setName(name);
-					String time = CatUtil.getTimer();
-					clientBean.setTimer(time);
-					clientBean.setInfo(info);
-					HashSet set = new HashSet();
-					set.addAll(onlines);
-					clientBean.setClients(set);
-					sendMessage(clientBean);
-					textArea_1.setText(null);
-					textArea_1.requestFocus();
-				}
-				if (info.equals("")) {
-					JOptionPane.showMessageDialog(getContentPane(), "²»ÄÜ·¢ËÍ¿ÕĞÅÏ¢");
-					return;
-				}
-
-				if (!to.toString().contains(name + "(ÎÒ)")) {
-					CatBean clientBean = new CatBean();
-					clientBean.setType(1);
-					clientBean.setName(name);
-					String time = CatUtil.getTimer();
-					clientBean.setTimer(time);
-					clientBean.setInfo(info);
-					HashSet set = new HashSet();
-					set.addAll(to);
-					clientBean.setClients(set);
-
-					// ×Ô¼º·¢µÄÄÚÈİÒ²ÒªÏÖÊµÔÚ×Ô¼ºµÄÆÁÄ»ÉÏÃæ
-					textArea.append(time + " ÎÒ¶Ô" + to + "Ëµ:\r\n" + info
-							+ "\r\n");
-
-					sendMessage(clientBean);
-					textArea_1.setText(null);
-					textArea_1.requestFocus();
-				}
-				
-			}
-		});
-
-		// ¹Ø±Õ°´Å¥
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (isSendFile || isReceiveFile) {
-					JOptionPane.showMessageDialog(contentPane,
-							"ÕıÔÚ´«ÊäÎÄ¼şÖĞ£¬Äú²»ÄÜÀë¿ª...", "Error Message",
-							JOptionPane.ERROR_MESSAGE);
-				} else {
-					btnNewButton.setEnabled(false);
-					CatBean clientBean = new CatBean();
-					clientBean.setType(-1);
-					clientBean.setName(name);
-					clientBean.setTimer(CatUtil.getTimer());
-					sendMessage(clientBean);
-				}
-			}
-		});
-
-		// Àë¿ª
-		this.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				// TODO Auto-generated method stub
-				if (isSendFile || isReceiveFile) {
-					JOptionPane.showMessageDialog(contentPane,
-							"ÕıÔÚ´«ÊäÎÄ¼şÖĞ£¬Äú²»ÄÜÀë¿ª...", "Error Message",
-							JOptionPane.ERROR_MESSAGE);
-				} else {
-					int result = JOptionPane.showConfirmDialog(
-							getContentPane(), "ÄúÈ·¶¨ÒªÀë¿ªÁÄÌìÊÒ");
-					if (result == 0) {
-						CatBean clientBean = new CatBean();
-						clientBean.setType(-1);
-						clientBean.setName(name);
-						clientBean.setTimer(CatUtil.getTimer());
-						sendMessage(clientBean);
-					}
-				}
-			}
-		});
-
-		// ÁĞ±í¼àÌı
-		list.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				List to = list.getSelectedValuesList();
-				if (e.getClickCount() == 2) {
-
-					if (to.toString().contains(name + "(ÎÒ)")) {
-						JOptionPane.showMessageDialog(getContentPane(),
-								"²»ÄÜÏò×Ô¼º·¢ËÍÎÄ¼ş");
-						return;
-					}
-
-					// Ë«»÷´ò¿ªÎÄ¼şÎÄ¼şÑ¡Ôñ¿ò
-					JFileChooser chooser = new JFileChooser();
-					chooser.setDialogTitle("Ñ¡ÔñÎÄ¼ş¿ò"); // ±êÌâÅ¶...
-					chooser.showDialog(getContentPane(), "Ñ¡Ôñ"); // ÕâÊÇ°´Å¥µÄÃû×Ö..
-
-					// ÅĞ¶¨ÊÇ·ñÑ¡ÔñÁËÎÄ¼ş
-					if (chooser.getSelectedFile() != null) {
-						// »ñÈ¡Â·¾¶
-						filePath = chooser.getSelectedFile().getPath();
-						File file = new File(filePath);
-						// ÎÄ¼şÎª¿Õ
-						if (file.length() == 0) {
-							JOptionPane.showMessageDialog(getContentPane(),
-									filePath + "ÎÄ¼şÎª¿Õ,²»ÔÊĞí·¢ËÍ.");
-							return;
-						}
-
-						CatBean clientBean = new CatBean();
-						clientBean.setType(2);// ÇëÇó·¢ËÍÎÄ¼ş
-						clientBean.setSize(new Long(file.length()).intValue());
-						clientBean.setName(name);
-						clientBean.setTimer(CatUtil.getTimer());
-						clientBean.setFileName(file.getName()); // ¼ÇÂ¼ÎÄ¼şµÄÃû³Æ
-						clientBean.setInfo("ÇëÇó·¢ËÍÎÄ¼ş");
-
-						// ÅĞ¶ÏÒª·¢ËÍ¸øË­
-						HashSet<String> set = new HashSet<String>();
-						set.addAll(list.getSelectedValuesList());
-						clientBean.setClients(set);
-						sendMessage(clientBean);
-					}
-				}
-			}
-		});
-
-	}
-
-	class ClientInputThread extends Thread {
-
-		@Override
-		public void run() {
-			try {
-				// ²»Í£µÄ´Ó·şÎñÆ÷½ÓÊÕĞÅÏ¢
-				while (true) {
-					ois = new ObjectInputStream(clientSocket.getInputStream());
-					final CatBean bean = (CatBean) ois.readObject();
-					switch (bean.getType()) {
-					case 0: {
-						// ¸üĞÂÁĞ±í
-						onlines.clear();
-						HashSet<String> clients = bean.getClients();
-						Iterator<String> it = clients.iterator();
-						while (it.hasNext()) {
-							String ele = it.next();
-							if (name.equals(ele)) {
-								onlines.add(ele + "(ÎÒ)");
-							} else {
-								onlines.add(ele);
-							}
-						}
-
-						listmodel = new UUListModel(onlines);
-						list.setModel(listmodel);
-						aau2.play();
-						textArea.append(bean.getInfo() + "\r\n");
-						textArea.selectAll();
-						break;
-					}
-					case -1: {
-
-						return;
-					}
-					case 1: {
-
-						String info = bean.getTimer() + "  " + bean.getName()
-								+ " ¶Ô " + bean.getClients() + "Ëµ:\r\n";
-						if (info.contains(name)) {
-							info = info.replace(name, "ÎÒ");
-						}
-						aau.play();
-						textArea.append(info + bean.getInfo() + "\r\n");
-						textArea.selectAll();
-						break;
-					}
-					case 5: {
-
-						String info = bean.getTimer() + "  " + bean.getName()
-								+ " ¶Ô " + bean.getClients() + "Ëµ:\r\n";
-						if (info.contains(name)) {
-							info = info.replace(name, "ÎÒ");
-						}
-						aau.play();
-						textArea.append(info + bean.getInfo() + "\r\n");
-						textArea.selectAll();
-						break;
-					}
-					case 2: {
-						// ÓÉÓÚµÈ´ıÄ¿±ê¿Í»§È·ÈÏÊÇ·ñ½ÓÊÕÎÄ¼şÊÇ¸ö×èÈû×´Ì¬£¬ËùÒÔÕâÀïÓÃÏß³Ì´¦Àí
-						new Thread() {
-							public void run() {
-								// ÏÔÊ¾ÊÇ·ñ½ÓÊÕÎÄ¼ş¶Ô»°¿ò
-								int result = JOptionPane.showConfirmDialog(
-										getContentPane(), bean.getInfo());
-								switch (result) {
-								case 0: { // ½ÓÊÕÎÄ¼ş
-									JFileChooser chooser = new JFileChooser();
-									chooser.setDialogTitle("±£´æÎÄ¼ş¿ò"); // ±êÌâÅ¶...
-									// Ä¬ÈÏÎÄ¼şÃû³Æ»¹ÓĞ·ÅÔÚµ±Ç°Ä¿Â¼ÏÂ
-									chooser.setSelectedFile(new File(bean
-											.getFileName()));
-									chooser.showDialog(getContentPane(), "±£´æ"); // ÕâÊÇ°´Å¥µÄÃû×Ö..
-									// ±£´æÂ·¾¶
-									String saveFilePath = chooser
-											.getSelectedFile().toString();
-
-									// ´´½¨¿Í»§CatBean
-									CatBean clientBean = new CatBean();
-									clientBean.setType(3);
-									clientBean.setName(name); // ½ÓÊÕÎÄ¼şµÄ¿Í»§Ãû×Ö
-									clientBean.setTimer(CatUtil.getTimer());
-									clientBean.setFileName(saveFilePath);
-									clientBean.setInfo("È·¶¨½ÓÊÕÎÄ¼ş");
-
-									// ÅĞ¶ÏÒª·¢ËÍ¸øË­
-									HashSet<String> set = new HashSet<String>();
-									set.add(bean.getName());
-									clientBean.setClients(set); // ÎÄ¼şÀ´Ô´
-									clientBean.setTo(bean.getClients());// ¸øÕâĞ©¿Í»§·¢ËÍÎÄ¼ş
-
-									// ´´½¨ĞÂµÄtcp socket ½ÓÊÕÊı¾İ, ÕâÊÇ¶îÍâÔö¼ÓµÄ¹¦ÄÜ, ´ó¼ÒÇëÁôÒâ...
-									try {
-										ServerSocket ss = new ServerSocket(0); // 0¿ÉÒÔ»ñÈ¡¿ÕÏĞµÄ¶Ë¿ÚºÅ
-
-										clientBean.setIp(clientSocket
-												.getInetAddress()
-												.getHostAddress());
-										clientBean.setPort(ss.getLocalPort());
-										sendMessage(clientBean); // ÏÈÍ¨¹ı·şÎñÆ÷¸æËß·¢ËÍ·½,
-																	// Äã¿ÉÒÔÖ±½Ó·¢ËÍÎÄ¼şµ½ÎÒÕâÀïÁË...
-
-										isReceiveFile = true;
-										// µÈ´ıÎÄ¼şÀ´Ô´µÄ¿Í»§£¬ÊäËÍÎÄ¼ş....Ä¿±ê¿Í»§´ÓÍøÂçÉÏ¶ÁÈ¡ÎÄ¼ş£¬²¢Ğ´ÔÚ±¾µØÉÏ
-										Socket sk = ss.accept();
-										textArea.append(CatUtil.getTimer()
-												+ "  " + bean.getFileName()
-												+ "ÎÄ¼ş±£´æÖĞ.\r\n");
-										DataInputStream dis = new DataInputStream( // ´ÓÍøÂçÉÏ¶ÁÈ¡ÎÄ¼ş
-												new BufferedInputStream(
-														sk.getInputStream()));
-										DataOutputStream dos = new DataOutputStream( // Ğ´ÔÚ±¾µØÉÏ
-												new BufferedOutputStream(
-														new FileOutputStream(
-																saveFilePath)));
-
-										int count = 0;
-										int num = bean.getSize() / 100;
-										int index = 0;
-										while (count < bean.getSize()) {
-											int t = dis.read();
-											dos.write(t);
-											count++;
-
-											if (num > 0) {
-												if (count % num == 0
-														&& index < 100) {
-													progressBar
-															.setValue(++index);
-												}
-												lblNewLabel.setText("ÏÂÔØ½ø¶È:"
-														+ count + "/"
-														+ bean.getSize()
-														+ "  ÕûÌå" + index + "%");
-											} else {
-												lblNewLabel
-														.setText("ÏÂÔØ½ø¶È:"
-																+ count
-																+ "/"
-																+ bean.getSize()
-																+ "  ÕûÌå:"
-																+ new Double(
-																		new Double(
-																				count)
-																				.doubleValue()
-																				/ new Double(
-																						bean.getSize())
-																						.doubleValue()
-																				* 100)
-																		.intValue()
-																+ "%");
-												if (count == bean.getSize()) {
-													progressBar.setValue(100);
-												}
-											}
-
-										}
-
-										// ¸øÎÄ¼şÀ´Ô´¿Í»§·¢ÌõÌáÊ¾£¬ÎÄ¼ş±£´æÍê±Ï
-										PrintWriter out = new PrintWriter(
-												sk.getOutputStream(), true);
-										out.println(CatUtil.getTimer() + " ·¢ËÍ¸ø"
-												+ name + "µÄÎÄ¼ş["
-												+ bean.getFileName() + "]"
-												+ "ÎÄ¼ş±£´æÍê±Ï.\r\n");
-										out.flush();
-										dos.flush();
-										dos.close();
-										out.close();
-										dis.close();
-										sk.close();
-										ss.close();
-										textArea.append(CatUtil.getTimer()
-												+ "  " + bean.getFileName()
-												+ "ÎÄ¼ş±£´æÍê±Ï.´æ·ÅÎ»ÖÃÎª:"
-												+ saveFilePath + "\r\n");
-										isReceiveFile = false;
-									} catch (Exception e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-
-									break;
-								}
-								default: {
-									CatBean clientBean = new CatBean();
-									clientBean.setType(4);
-									clientBean.setName(name); // ½ÓÊÕÎÄ¼şµÄ¿Í»§Ãû×Ö
-									clientBean.setTimer(CatUtil.getTimer());
-									clientBean.setFileName(bean.getFileName());
-									clientBean.setInfo(CatUtil.getTimer()
-											+ "  " + name + "È¡Ïû½ÓÊÕÎÄ¼ş["
-											+ bean.getFileName() + "]");
-
-									// ÅĞ¶ÏÒª·¢ËÍ¸øË­
-									HashSet<String> set = new HashSet<String>();
-									set.add(bean.getName());
-									clientBean.setClients(set); // ÎÄ¼şÀ´Ô´
-									clientBean.setTo(bean.getClients());// ¸øÕâĞ©¿Í»§·¢ËÍÎÄ¼ş
-
-									sendMessage(clientBean);
-
-									break;
-
-								}
-								}
-							};
-						}.start();
-						break;
-					}
-					case 3: { // Ä¿±ê¿Í»§Ô¸Òâ½ÓÊÕÎÄ¼ş£¬Ô´¿Í»§¿ªÊ¼¶ÁÈ¡±¾µØÎÄ¼ş²¢·¢ËÍµ½ÍøÂçÉÏ
-						textArea.append(bean.getTimer() + "  " + bean.getName()
-								+ "È·¶¨½ÓÊÕÎÄ¼ş" + ",ÎÄ¼ş´«ËÍÖĞ..\r\n");
-						new Thread() {
-							public void run() {
-
-								try {
-									isSendFile = true;
-									// ´´½¨Òª½ÓÊÕÎÄ¼şµÄ¿Í»§Ì×½Ó×Ö
-									Socket s = new Socket(bean.getIp(),
-											bean.getPort());
-									DataInputStream dis = new DataInputStream(
-											new FileInputStream(filePath)); // ±¾µØ¶ÁÈ¡¸Ã¿Í»§¸Õ²ÅÑ¡ÖĞµÄÎÄ¼ş
-									DataOutputStream dos = new DataOutputStream(
-											new BufferedOutputStream(
-													s.getOutputStream())); // ÍøÂçĞ´³öÎÄ¼ş
-
-									int size = dis.available();
-
-									int count = 0; // ¶ÁÈ¡´ÎÊı
-									int num = size / 100;
-									int index = 0;
-									while (count < size) {
-
-										int t = dis.read();
-										dos.write(t);
-										count++; // Ã¿´ÎÖ»¶ÁÈ¡Ò»¸ö×Ö½Ú
-
-										if (num > 0) {
-											if (count % num == 0 && index < 100) {
-												progressBar.setValue(++index);
-
-											}
-											lblNewLabel.setText("ÉÏ´«½ø¶È:" + count
-													+ "/" + size + "  ÕûÌå"
-													+ index + "%");
-										} else {
-											lblNewLabel
-													.setText("ÉÏ´«½ø¶È:"
-															+ count
-															+ "/"
-															+ size
-															+ "  ÕûÌå:"
-															+ new Double(
-																	new Double(
-																			count)
-																			.doubleValue()
-																			/ new Double(
-																					size)
-																					.doubleValue()
-																			* 100)
-																	.intValue()
-															+ "%");
-											if (count == size) {
-												progressBar.setValue(100);
-											}
-										}
-									}
-									dos.flush();
-									dis.close();
-									// ¶ÁÈ¡Ä¿±ê¿Í»§µÄÌáÊ¾±£´æÍê±ÏµÄĞÅÏ¢...
-									BufferedReader br = new BufferedReader(
-											new InputStreamReader(
-													s.getInputStream()));
-									textArea.append(br.readLine() + "\r\n");
-									isSendFile = false;
-									br.close();
-									s.close();
-								} catch (Exception ex) {
-									ex.printStackTrace();
-								}
-
-							};
-						}.start();
-						break;
-					}
-					case 4: {
-						textArea.append(bean.getInfo() + "\r\n");
-						break;
-					}
-					default: {
-						break;
-					}
-					}
-
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				if (clientSocket != null) {
-					try {
-						clientSocket.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				System.exit(0);
-			}
-		}
-	}
-
-	private void sendMessage(CatBean clientBean) {
-		try {
-			oos = new ObjectOutputStream(clientSocket.getOutputStream());
-			oos.writeObject(clientBean);
-			oos.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    private static final long serialVersionUID = 6129126482250125466L;
+
+    private static JPanel contentPane;
+    private static Socket clientSocket;
+    private static ObjectOutputStream oos;
+    private static ObjectInputStream ois;
+    private static String name;
+    private static JTextArea textArea;
+    private static JTextField textField;
+    private static AbstractListModel listmodel;
+    private static JList list;
+    private static String filePath;
+    private static JLabel lblNewLabel;
+    private static JProgressBar progressBar;
+    private static Vector onlines;
+    private static Vector friends;
+    private static boolean isSendFile = false;
+    private static boolean isReceiveFile = false;
+
+    /**
+     * Create the frame.
+     */
+
+    public CatChatroom(String u_name, Socket client) {
+        // èµ‹å€¼
+        name = u_name;
+        clientSocket = client;
+        onlines = new Vector();
+
+        friends = new Vector();
+//        friends.add("mike");
+//        friends.add("jack");
+        SwingUtilities.updateComponentTreeUI(this);
+
+
+        setTitle(name);
+        setResizable(false);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setBounds(200, 100, 688, 510);
+//		contentPane = new JPanel() {
+//			private static final long serialVersionUID = 1L;
+//
+//			@Override
+//			protected void paintComponent(Graphics g) {
+//				super.paintComponent(g);
+//				g.drawImage(new ImageIcon("images\\77.jpg").getImage(), 0, 0,
+//						getWidth(), getHeight(), null);
+//			}
+//
+//		};
+        contentPane = new JPanel();
+        setContentPane(contentPane);
+        contentPane.setLayout(null);
+
+        // èŠå¤©ä¿¡æ¯æ˜¾ç¤ºåŒºåŸŸ
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setBounds(10, 10, 410, 300);
+        getContentPane().add(scrollPane);
+
+        textArea = new JTextArea();
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);// æ¿€æ´»è‡ªåŠ¨æ¢è¡ŒåŠŸèƒ½
+        textArea.setWrapStyleWord(true);// æ¿€æ´»æ–­è¡Œä¸æ–­å­—åŠŸèƒ½
+        textArea.setFont(new Font("sdf", Font.BOLD, 13));
+        scrollPane.setViewportView(textArea);
+
+        // æ‰“å­—åŒºåŸŸ
+        JScrollPane scrollPane_1 = new JScrollPane();
+        scrollPane_1.setBounds(10, 347, 411, 97);
+        getContentPane().add(scrollPane_1);
+
+        final JTextArea textArea_1 = new JTextArea();
+        textArea_1.setLineWrap(true);// æ¿€æ´»è‡ªåŠ¨æ¢è¡ŒåŠŸèƒ½
+        textArea_1.setWrapStyleWord(true);// æ¿€æ´»æ–­è¡Œä¸æ–­å­—åŠŸèƒ½
+        scrollPane_1.setViewportView(textArea_1);
+
+
+        // å…³é—­æŒ‰é’®
+//		final JButton btnNewButton = new JButton("\u5173\u95ED");
+//		final JButton btnNewButton = new JButton("å…³é—­");
+//		btnNewButton.setBounds(200, 448, 60, 30);
+//		getContentPane().add(btnNewButton);
+
+        // å‘é€æŒ‰é’®
+//		JButton btnNewButton_1 = new JButton("\u53D1\u9001");
+        JButton btnNewButton_1 = new JButton("å‘é€");
+        btnNewButton_1.setBounds(100, 448, 60, 30);
+        getRootPane().setDefaultButton(btnNewButton_1);
+        getContentPane().add(btnNewButton_1);
+
+        // å‘é€æ–‡ä»¶æŒ‰é’®
+//		JButton btnNewButton_1 = new JButton("\u53D1\u9001");
+        JButton btnFile = new JButton("å‘é€æ–‡ä»¶");
+        btnFile.setBounds(170, 448, 100, 30);
+        getRootPane().setDefaultButton(btnFile);
+        getContentPane().add(btnFile);
+
+        // å†å²æ¶ˆæ¯æŒ‰é’®
+//		JButton btnNewButton_1 = new JButton("\u53D1\u9001");
+        JButton btnHistory = new JButton("å†å²æ¶ˆæ¯");
+        btnHistory.setBounds(280, 448, 100, 30);
+        getRootPane().setDefaultButton(btnHistory);
+        getContentPane().add(btnHistory);
+
+        // åœ¨çº¿å®¢æˆ·åˆ—è¡¨
+//        listmodel = new UUListModel(onlines);
+//        list = new JList(listmodel);
+        list = new JList();
+        list.setCellRenderer(new CellRenderer());
+        list.setOpaque(false);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //ä»æ•°æ®åº“è·å–å¥½å‹åˆ—è¡¨
+        updateFirends();
+
+//		Border etch = BorderFactory.createEtchedBorder();
+//		list.setBorder(BorderFactory.createTitledBorder(etch, "åœ¨çº¿å®¢æˆ·:", TitledBorder.LEADING, TitledBorder.TOP,
+//				new Font("sdf", Font.BOLD, 18), Color.red));
+
+        JScrollPane scrollPane_2 = new JScrollPane(list);
+        scrollPane_2.setBounds(430, 10, 245, 375);
+        scrollPane_2.setOpaque(false);
+        scrollPane_2.getViewport().setOpaque(false);
+        getContentPane().add(scrollPane_2);
+
+
+        // æ–‡ä»¶ä¼ è¾“æ 
+        progressBar = new JProgressBar();
+        progressBar.setBounds(430, 390, 245, 15);
+        progressBar.setMinimum(1);
+        progressBar.setMaximum(100);
+        getContentPane().add(progressBar);
+
+        // æ–‡ä»¶ä¼ è¾“æç¤º
+        lblNewLabel = new JLabel("");
+        lblNewLabel.setFont(new Font("SimSun", Font.PLAIN, 12));
+        lblNewLabel.setBackground(Color.WHITE);
+        lblNewLabel.setBounds(430, 410, 245, 15);
+        getContentPane().add(lblNewLabel);
+
+        textField = new JTextField();
+        textField.setBounds(430, 430, 245, 30);
+        getContentPane().add(textField);
+
+        JButton btnAdd = new JButton("æ·»åŠ å¥½å‹");
+        btnAdd.setBounds(430, 460, 100, 30);
+        getRootPane().setDefaultButton(btnAdd);
+        getContentPane().add(btnAdd);
+
+        JButton btnDelete = new JButton("åˆ é™¤å¥½å‹");
+        btnDelete.setBounds(540, 460, 100, 30);
+        getRootPane().setDefaultButton(btnDelete);
+        getContentPane().add(btnDelete);
+
+        try {
+            oos = new ObjectOutputStream(clientSocket.getOutputStream());
+            // è®°å½•ä¸Šçº¿å®¢æˆ·çš„ä¿¡æ¯åœ¨catbeanä¸­ï¼Œå¹¶å‘é€ç»™æœåŠ¡å™¨
+            CatBean bean = new CatBean();
+            bean.setType(0);
+            bean.setName(name);
+            bean.setTimer(CatUtil.getTimer());
+            oos.writeObject(bean);
+            oos.flush();
+
+            // å¯åŠ¨å®¢æˆ·æ¥æ”¶çº¿ç¨‹
+            new ClientInputThread().start();
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // å‘é€æŒ‰é’®
+        btnNewButton_1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String info = textArea_1.getText();
+                List to = list.getSelectedValuesList();
+
+                if (to.size() < 1) {
+                    JOptionPane.showMessageDialog(getContentPane(), "è¯·é€‰æ‹©èŠå¤©å¯¹è±¡");
+                    return;
+                }
+                if (to.toString().contains(name + "(æˆ‘)")) {
+                    JOptionPane.showMessageDialog(getContentPane(),
+                            "ä¸èƒ½å‘è‡ªå·±å‘é€æ¶ˆæ¯");
+                    return;
+                }
+                if (to.toString().contains("ç¦»çº¿")) {
+                    JOptionPane.showMessageDialog(getContentPane(),
+                            "ä¸èƒ½å‘ç¦»çº¿ç”¨æˆ·å‘é€æ¶ˆæ¯");
+                    return;
+                }
+//                //å–æ¶ˆå‘å…¨ä½“å‘é€çš„åŠŸèƒ½
+//                if (to.toString().contains(name + "(æˆ‘)")) {
+//                    CatBean clientBean = new CatBean();
+//                    clientBean.setType(5);
+//                    clientBean.setName(name);
+//                    String time = CatUtil.getTimer();
+//                    clientBean.setTimer(time);
+//                    clientBean.setInfo(info);
+//                    HashSet set = new HashSet();
+//                    set.addAll(onlines);
+//                    clientBean.setClients(set);
+//                    sendMessage(clientBean);
+//                    textArea_1.setText(null);
+//                    textArea_1.requestFocus();
+//                }
+                if (info.equals("")) {
+                    JOptionPane.showMessageDialog(getContentPane(), "ä¸èƒ½å‘é€ç©ºä¿¡æ¯");
+                    return;
+                }
+
+                if (!to.toString().contains(name + "(æˆ‘)")) {
+                    CatBean clientBean = new CatBean();
+                    clientBean.setType(1);
+                    clientBean.setName(name);
+                    String time = CatUtil.getTimer();
+                    clientBean.setTimer(time);
+                    clientBean.setInfo(info);
+                    HashSet set = new HashSet();
+                    set.addAll(to);
+                    clientBean.setClients(set);
+
+                    // è‡ªå·±å‘çš„å†…å®¹ä¹Ÿè¦ç°å®åœ¨è‡ªå·±çš„å±å¹•ä¸Šé¢
+                    textArea.append(time + " æˆ‘å¯¹" + to + "è¯´:\r\n" + info
+                            + "\r\n");
+
+                    sendMessage(clientBean);
+                    textArea_1.setText(null);
+                    textArea_1.requestFocus();
+                }
+
+            }
+        });
+
+        btnFile.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                List to = list.getSelectedValuesList();
+                if (to==null||to.size()<1){
+                    JOptionPane.showMessageDialog(getContentPane(),
+                            "è¯·é€‰æ‹©å‘é€æ–‡ä»¶çš„å¯¹è±¡");
+                    return;
+                }
+                if (to.toString().contains(name + "(æˆ‘)")) {
+                    JOptionPane.showMessageDialog(getContentPane(),
+                            "ä¸èƒ½å‘è‡ªå·±å‘é€æ–‡ä»¶");
+                    return;
+                }
+                if (to.toString().contains("ç¦»çº¿")) {
+                    JOptionPane.showMessageDialog(getContentPane(),
+                            "ä¸èƒ½å‘ç¦»çº¿ç”¨æˆ·å‘é€æ–‡ä»¶");
+                    return;
+                }
+
+                JFileChooser chooser = new JFileChooser();
+                chooser.setDialogTitle("é€‰æ‹©æ–‡ä»¶æ¡†"); // æ ‡é¢˜å“¦...
+                chooser.showDialog(getContentPane(), "é€‰æ‹©"); // è¿™æ˜¯æŒ‰é’®çš„åå­—..
+
+                // åˆ¤å®šæ˜¯å¦é€‰æ‹©äº†æ–‡ä»¶
+                if (chooser.getSelectedFile() != null) {
+                    // è·å–è·¯å¾„
+                    filePath = chooser.getSelectedFile().getPath();
+                    File file = new File(filePath);
+                    // æ–‡ä»¶ä¸ºç©º
+                    if (file.length() == 0) {
+                        JOptionPane.showMessageDialog(getContentPane(),
+                                filePath + "æ–‡ä»¶ä¸ºç©º,ä¸å…è®¸å‘é€.");
+                        return;
+                    }
+
+                    CatBean clientBean = new CatBean();
+                    clientBean.setType(2);// è¯·æ±‚å‘é€æ–‡ä»¶
+                    clientBean.setSize(new Long(file.length()).intValue());
+                    clientBean.setName(name);
+                    clientBean.setTimer(CatUtil.getTimer());
+                    clientBean.setFileName(file.getName()); // è®°å½•æ–‡ä»¶çš„åç§°
+                    clientBean.setInfo("è¯·æ±‚å‘é€æ–‡ä»¶");
+
+                    // åˆ¤æ–­è¦å‘é€ç»™è°
+                    HashSet<String> set = new HashSet<String>();
+                    set.addAll(list.getSelectedValuesList());
+                    clientBean.setClients(set);
+                    sendMessage(clientBean);
+                }
+            }
+        });
+
+        btnHistory.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ChatHistory chatHistoryframe=new ChatHistory(name);
+                chatHistoryframe.setVisible(true);
+            }
+        });
+        btnAdd.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String friendName = textField.getText();
+                if (friendName.equals("")) {
+                    JOptionPane.showMessageDialog(getContentPane(), "æ·»åŠ å¥½å‹åå­—ä¸èƒ½ä¸ºç©º");
+                    return;
+                }
+                if (friendName.equals(name)) {
+                    JOptionPane.showMessageDialog(getContentPane(), "ä¸èƒ½æ·»åŠ è‡ªå·±");
+                    return;
+                }
+                if (friends.contains(name)) {
+                    JOptionPane.showMessageDialog(getContentPane(), "å¥½å‹å·²åœ¨åˆ—è¡¨ä¸­");
+                    return;
+                }
+                CatBean catBean = new CatBean();
+                catBean.setType(6);
+                catBean.setName(name);
+                HashSet<String> set = new HashSet<String>();
+                set.add(friendName);
+                catBean.setClients(set);
+                sendMessage(catBean);
+            }
+        });
+
+        // å…³é—­æŒ‰é’®
+//		btnNewButton.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if (isSendFile || isReceiveFile) {
+//					JOptionPane.showMessageDialog(contentPane,
+//							"æ­£åœ¨ä¼ è¾“æ–‡ä»¶ä¸­ï¼Œæ‚¨ä¸èƒ½ç¦»å¼€...", "Error Message",
+//							JOptionPane.ERROR_MESSAGE);
+//				} else {
+//					btnNewButton.setEnabled(false);
+//					CatBean clientBean = new CatBean();
+//					clientBean.setType(-1);
+//					clientBean.setName(name);
+//					clientBean.setTimer(CatUtil.getTimer());
+//					sendMessage(clientBean);
+//				}
+//			}
+//		});
+
+        btnDelete.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int index = list.getSelectedIndex();
+                if (index != -1) {
+                    FriendBean friendBean = (FriendBean) HibernateDao.queryOne("select f from FriendBean f where f.user_name =? and f.friend_name=?", new String[]{name, (String) friends.get(index)});
+                    HibernateDao.delete(friendBean);
+                    friends.remove(index);
+                    onlines.remove(index);
+                    listmodel = new UUListModel(onlines);
+                    list.setModel(listmodel);
+
+                } else {
+                    JOptionPane.showMessageDialog(getContentPane(), "è¯·é€‰æ‹©è¦åˆ é™¤çš„å¥½å‹");
+                    return;
+                }
+            }
+        });
+
+        // ç¦»å¼€
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // TODO Auto-generated method stub
+                if (isSendFile || isReceiveFile) {
+                    JOptionPane.showMessageDialog(contentPane,
+                            "æ­£åœ¨ä¼ è¾“æ–‡ä»¶ä¸­ï¼Œæ‚¨ä¸èƒ½ç¦»å¼€...", "Error Message",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    int result = JOptionPane.showConfirmDialog(
+                            getContentPane(), "æ‚¨ç¡®å®šè¦ç¦»å¼€èŠå¤©å®¤");
+                    if (result == 0) {
+                        CatBean clientBean = new CatBean();
+                        clientBean.setType(-1);
+                        clientBean.setName(name);
+                        clientBean.setTimer(CatUtil.getTimer());
+                        sendMessage(clientBean);
+                    }
+                }
+            }
+        });
+
+        // åˆ—è¡¨ç›‘å¬
+        list.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                List to = list.getSelectedValuesList();
+                if (e.getClickCount() == 2) {
+
+                    if (to.toString().contains(name + "(æˆ‘)")) {
+                        JOptionPane.showMessageDialog(getContentPane(),
+                                "ä¸èƒ½å‘è‡ªå·±å‘é€æ–‡ä»¶");
+                        return;
+                    }
+                    if (to.toString().contains("ç¦»çº¿")) {
+                        JOptionPane.showMessageDialog(getContentPane(),
+                                "ä¸èƒ½å‘ç¦»çº¿ç”¨æˆ·å‘é€æ–‡ä»¶");
+                        return;
+                    }
+
+                    // åŒå‡»æ‰“å¼€æ–‡ä»¶æ–‡ä»¶é€‰æ‹©æ¡†
+                    JFileChooser chooser = new JFileChooser();
+                    chooser.setDialogTitle("é€‰æ‹©æ–‡ä»¶æ¡†"); // æ ‡é¢˜å“¦...
+                    chooser.showDialog(getContentPane(), "é€‰æ‹©"); // è¿™æ˜¯æŒ‰é’®çš„åå­—..
+
+                    // åˆ¤å®šæ˜¯å¦é€‰æ‹©äº†æ–‡ä»¶
+                    if (chooser.getSelectedFile() != null) {
+                        // è·å–è·¯å¾„
+                        filePath = chooser.getSelectedFile().getPath();
+                        File file = new File(filePath);
+                        // æ–‡ä»¶ä¸ºç©º
+                        if (file.length() == 0) {
+                            JOptionPane.showMessageDialog(getContentPane(),
+                                    filePath + "æ–‡ä»¶ä¸ºç©º,ä¸å…è®¸å‘é€.");
+                            return;
+                        }
+
+                        CatBean clientBean = new CatBean();
+                        clientBean.setType(2);// è¯·æ±‚å‘é€æ–‡ä»¶
+                        clientBean.setSize(new Long(file.length()).intValue());
+                        clientBean.setName(name);
+                        clientBean.setTimer(CatUtil.getTimer());
+                        clientBean.setFileName(file.getName()); // è®°å½•æ–‡ä»¶çš„åç§°
+                        clientBean.setInfo("è¯·æ±‚å‘é€æ–‡ä»¶");
+
+                        // åˆ¤æ–­è¦å‘é€ç»™è°
+                        HashSet<String> set = new HashSet<String>();
+                        set.addAll(list.getSelectedValuesList());
+                        clientBean.setClients(set);
+                        sendMessage(clientBean);
+                    }
+                }
+            }
+        });
+
+    }
+
+    private void updateFirends() {
+        friends.clear();
+        List<FriendBean> friendBeanList = HibernateDao.query("select f from FriendBean f where f.user_name=?", new String[]{name});
+        if (friendBeanList != null || friendBeanList.size() > 0) {
+            for (FriendBean friendBean : friendBeanList) {
+                friends.add(friendBean.getFriend_name());
+            }
+        }
+
+    }
+//    private void updatetList(){
+//        for (Object item : friends) {
+//            if (onlines.contains(item)) {
+//                onlines.add(item);
+//            } else {
+//                onlines.add(item + "(ç¦»çº¿)");
+//            }
+//        }
+//        listmodel = new UUListModel(onlines);
+//        list.setModel(listmodel);
+//    }
+
+    class ClientInputThread extends Thread {
+
+        @Override
+        public void run() {
+            try {
+                // ä¸åœçš„ä»æœåŠ¡å™¨æ¥æ”¶ä¿¡æ¯
+                while (true) {
+                    ois = new ObjectInputStream(clientSocket.getInputStream());
+                    final CatBean bean = (CatBean) ois.readObject();
+                    switch (bean.getType()) {
+                        case 0: {
+                            //æŸ¥è¯¢æ•°æ®åº“è¿˜æ˜¯è¯´è·å–
+                            // æ›´æ–°åˆ—è¡¨
+                            onlines.clear();
+                            HashSet<String> clients = bean.getClients();
+                            System.out.println(clients);
+                            for (Object item : friends) {
+                                if (clients.contains(item)) {
+                                    onlines.add(item);
+                                } else {
+                                    onlines.add(item + "(ç¦»çº¿)");
+                                }
+                            }
+                            listmodel = new UUListModel(onlines);
+                            list.setModel(listmodel);
+
+//                            onlines.add(name + "(æˆ‘)");
+//						Iterator<String> it = clients.iterator();
+//						while (it.hasNext()) {
+//							String ele = it.next();
+//							//è¦å¢åŠ å¥½å‹åŠŸèƒ½,åˆ¤æ–­æ˜¯å¥½å‹æ‰æ˜¾ç¤º
+//							if (name.equals(ele)) {
+//								onlines.add(ele + "(æˆ‘)");
+//							} else {
+//								onlines.add(ele);
+//							}
+//						}
+
+
+                            //å¦‚æœæ˜¯å¥½å‹æ‰æ˜¾ç¤ºä¸Šçº¿ä¿¡æ¯
+                            if (friends.contains(bean.getName())) {
+                                textArea.append(bean.getInfo() + "\r\n");
+                                textArea.selectAll();
+                            }
+                            break;
+                        }
+                        case -1: {
+
+                            return;
+                        }
+                        case 1: {
+
+                            String info = bean.getTimer() + "  " + bean.getName()
+                                    + " å¯¹ " + bean.getClients() + "è¯´:\r\n";
+                            if (info.contains(name)) {
+                                info = info.replace(name, "æˆ‘");
+                            }
+                            textArea.append(info + bean.getInfo() + "\r\n");
+                            textArea.selectAll();
+                            break;
+                        }
+//                        case 5: {
+//
+//                            String info = bean.getTimer() + "  " + bean.getName()
+//                                    + " å¯¹ " + bean.getClients() + "è¯´:\r\n";
+//                            if (info.contains(name)) {
+//                                info = info.replace(name, "æˆ‘");
+//                            }
+//                            textArea.append(info + bean.getInfo() + "\r\n");
+//                            textArea.selectAll();
+//                            break;
+//                        }
+                        case 2: {
+                            // ç”±äºç­‰å¾…ç›®æ ‡å®¢æˆ·ç¡®è®¤æ˜¯å¦æ¥æ”¶æ–‡ä»¶æ˜¯ä¸ªé˜»å¡çŠ¶æ€ï¼Œæ‰€ä»¥è¿™é‡Œç”¨çº¿ç¨‹å¤„ç†
+                            new Thread() {
+                                public void run() {
+                                    // æ˜¾ç¤ºæ˜¯å¦æ¥æ”¶æ–‡ä»¶å¯¹è¯æ¡†
+                                    int result = JOptionPane.showConfirmDialog(
+                                            getContentPane(), bean.getInfo());
+                                    switch (result) {
+                                        case 0: { // æ¥æ”¶æ–‡ä»¶
+                                            JFileChooser chooser = new JFileChooser();
+                                            chooser.setDialogTitle("ä¿å­˜æ–‡ä»¶æ¡†"); // æ ‡é¢˜å“¦...
+                                            // é»˜è®¤æ–‡ä»¶åç§°è¿˜æœ‰æ”¾åœ¨å½“å‰ç›®å½•ä¸‹
+                                            chooser.setSelectedFile(new File(bean
+                                                    .getFileName()));
+                                            chooser.showDialog(getContentPane(), "ä¿å­˜"); // è¿™æ˜¯æŒ‰é’®çš„åå­—..
+                                            // ä¿å­˜è·¯å¾„
+                                            String saveFilePath = chooser
+                                                    .getSelectedFile().toString();
+
+                                            // åˆ›å»ºå®¢æˆ·CatBean
+                                            CatBean clientBean = new CatBean();
+                                            clientBean.setType(3);
+                                            clientBean.setName(name); // æ¥æ”¶æ–‡ä»¶çš„å®¢æˆ·åå­—
+                                            clientBean.setTimer(CatUtil.getTimer());
+                                            clientBean.setFileName(saveFilePath);
+                                            clientBean.setInfo("ç¡®å®šæ¥æ”¶æ–‡ä»¶");
+
+                                            // åˆ¤æ–­è¦å‘é€ç»™è°
+                                            HashSet<String> set = new HashSet<String>();
+                                            set.add(bean.getName());
+                                            clientBean.setClients(set); // æ–‡ä»¶æ¥æº
+                                            clientBean.setTo(bean.getClients());// ç»™è¿™äº›å®¢æˆ·å‘é€æ–‡ä»¶
+
+                                            // åˆ›å»ºæ–°çš„tcp socket æ¥æ”¶æ•°æ®, è¿™æ˜¯é¢å¤–å¢åŠ çš„åŠŸèƒ½, å¤§å®¶è¯·ç•™æ„...
+                                            try {
+                                                ServerSocket ss = new ServerSocket(0); // 0å¯ä»¥è·å–ç©ºé—²çš„ç«¯å£å·
+
+                                                clientBean.setIp(clientSocket
+                                                        .getInetAddress()
+                                                        .getHostAddress());
+                                                clientBean.setPort(ss.getLocalPort());
+                                                sendMessage(clientBean); // å…ˆé€šè¿‡æœåŠ¡å™¨å‘Šè¯‰å‘é€æ–¹,
+                                                // ä½ å¯ä»¥ç›´æ¥å‘é€æ–‡ä»¶åˆ°æˆ‘è¿™é‡Œäº†...
+
+                                                isReceiveFile = true;
+                                                // ç­‰å¾…æ–‡ä»¶æ¥æºçš„å®¢æˆ·ï¼Œè¾“é€æ–‡ä»¶....ç›®æ ‡å®¢æˆ·ä»ç½‘ç»œä¸Šè¯»å–æ–‡ä»¶ï¼Œå¹¶å†™åœ¨æœ¬åœ°ä¸Š
+                                                Socket sk = ss.accept();
+                                                textArea.append(CatUtil.getTimer()
+                                                        + "  " + bean.getFileName()
+                                                        + "æ–‡ä»¶ä¿å­˜ä¸­.\r\n");
+                                                DataInputStream dis = new DataInputStream( // ä»ç½‘ç»œä¸Šè¯»å–æ–‡ä»¶
+                                                        new BufferedInputStream(
+                                                                sk.getInputStream()));
+                                                DataOutputStream dos = new DataOutputStream( // å†™åœ¨æœ¬åœ°ä¸Š
+                                                        new BufferedOutputStream(
+                                                                new FileOutputStream(
+                                                                        saveFilePath)));
+
+                                                int count = 0;
+                                                int num = bean.getSize() / 100;
+                                                int index = 0;
+                                                while (count < bean.getSize()) {
+                                                    int t = dis.read();
+                                                    dos.write(t);
+                                                    count++;
+
+                                                    if (num > 0) {
+                                                        if (count % num == 0
+                                                                && index < 100) {
+                                                            progressBar
+                                                                    .setValue(++index);
+                                                        }
+                                                        lblNewLabel.setText("ä¸‹è½½è¿›åº¦:"
+                                                                + count + "/"
+                                                                + bean.getSize()
+                                                                + "  æ•´ä½“" + index + "%");
+                                                    } else {
+                                                        lblNewLabel
+                                                                .setText("ä¸‹è½½è¿›åº¦:"
+                                                                        + count
+                                                                        + "/"
+                                                                        + bean.getSize()
+                                                                        + "  æ•´ä½“:"
+                                                                        + new Double(
+                                                                        new Double(
+                                                                                count)
+                                                                                .doubleValue()
+                                                                                / new Double(
+                                                                                bean.getSize())
+                                                                                .doubleValue()
+                                                                                * 100)
+                                                                        .intValue()
+                                                                        + "%");
+                                                        if (count == bean.getSize()) {
+                                                            progressBar.setValue(100);
+                                                        }
+                                                    }
+
+                                                }
+
+                                                // ç»™æ–‡ä»¶æ¥æºå®¢æˆ·å‘æ¡æç¤ºï¼Œæ–‡ä»¶ä¿å­˜å®Œæ¯•
+                                                PrintWriter out = new PrintWriter(
+                                                        sk.getOutputStream(), true);
+                                                out.println(CatUtil.getTimer() + " å‘é€ç»™"
+                                                        + name + "çš„æ–‡ä»¶["
+                                                        + bean.getFileName() + "]"
+                                                        + "æ–‡ä»¶ä¿å­˜å®Œæ¯•.\r\n");
+                                                out.flush();
+                                                dos.flush();
+                                                dos.close();
+                                                out.close();
+                                                dis.close();
+                                                sk.close();
+                                                ss.close();
+                                                textArea.append(CatUtil.getTimer()
+                                                        + "  " + bean.getFileName()
+                                                        + "æ–‡ä»¶ä¿å­˜å®Œæ¯•.å­˜æ”¾ä½ç½®ä¸º:"
+                                                        + saveFilePath + "\r\n");
+                                                isReceiveFile = false;
+                                            } catch (Exception e) {
+                                                // TODO Auto-generated catch block
+                                                e.printStackTrace();
+                                            }
+
+                                            break;
+                                        }
+                                        default: {
+                                            CatBean clientBean = new CatBean();
+                                            clientBean.setType(4);
+                                            clientBean.setName(name); // æ¥æ”¶æ–‡ä»¶çš„å®¢æˆ·åå­—
+                                            clientBean.setTimer(CatUtil.getTimer());
+                                            clientBean.setFileName(bean.getFileName());
+                                            clientBean.setInfo(CatUtil.getTimer()
+                                                    + "  " + name + "å–æ¶ˆæ¥æ”¶æ–‡ä»¶["
+                                                    + bean.getFileName() + "]");
+
+                                            // åˆ¤æ–­è¦å‘é€ç»™è°
+                                            HashSet<String> set = new HashSet<String>();
+                                            set.add(bean.getName());
+                                            clientBean.setClients(set); // æ–‡ä»¶æ¥æº
+                                            clientBean.setTo(bean.getClients());// ç»™è¿™äº›å®¢æˆ·å‘é€æ–‡ä»¶
+
+                                            sendMessage(clientBean);
+
+                                            break;
+
+                                        }
+                                    }
+                                }
+                            }.start();
+                            break;
+                        }
+                        case 3: { // ç›®æ ‡å®¢æˆ·æ„¿æ„æ¥æ”¶æ–‡ä»¶ï¼Œæºå®¢æˆ·å¼€å§‹è¯»å–æœ¬åœ°æ–‡ä»¶å¹¶å‘é€åˆ°ç½‘ç»œä¸Š
+                            textArea.append(bean.getTimer() + "  " + bean.getName()
+                                    + "ç¡®å®šæ¥æ”¶æ–‡ä»¶" + ",æ–‡ä»¶ä¼ é€ä¸­..\r\n");
+                            new Thread() {
+                                public void run() {
+
+                                    try {
+                                        isSendFile = true;
+                                        // åˆ›å»ºè¦æ¥æ”¶æ–‡ä»¶çš„å®¢æˆ·å¥—æ¥å­—
+                                        Socket s = new Socket(bean.getIp(),
+                                                bean.getPort());
+                                        DataInputStream dis = new DataInputStream(
+                                                new FileInputStream(filePath)); // æœ¬åœ°è¯»å–è¯¥å®¢æˆ·åˆšæ‰é€‰ä¸­çš„æ–‡ä»¶
+                                        DataOutputStream dos = new DataOutputStream(
+                                                new BufferedOutputStream(
+                                                        s.getOutputStream())); // ç½‘ç»œå†™å‡ºæ–‡ä»¶
+
+                                        int size = dis.available();
+
+                                        int count = 0; // è¯»å–æ¬¡æ•°
+                                        int num = size / 100;
+                                        int index = 0;
+                                        while (count < size) {
+
+                                            int t = dis.read();
+                                            dos.write(t);
+                                            count++; // æ¯æ¬¡åªè¯»å–ä¸€ä¸ªå­—èŠ‚
+
+                                            if (num > 0) {
+                                                if (count % num == 0 && index < 100) {
+                                                    progressBar.setValue(++index);
+
+                                                }
+                                                lblNewLabel.setText("ä¸Šä¼ è¿›åº¦:" + count
+                                                        + "/" + size + "  æ•´ä½“"
+                                                        + index + "%");
+                                            } else {
+                                                lblNewLabel
+                                                        .setText("ä¸Šä¼ è¿›åº¦:"
+                                                                + count
+                                                                + "/"
+                                                                + size
+                                                                + "  æ•´ä½“:"
+                                                                + new Double(
+                                                                new Double(
+                                                                        count)
+                                                                        .doubleValue()
+                                                                        / new Double(
+                                                                        size)
+                                                                        .doubleValue()
+                                                                        * 100)
+                                                                .intValue()
+                                                                + "%");
+                                                if (count == size) {
+                                                    progressBar.setValue(100);
+                                                }
+                                            }
+                                        }
+                                        dos.flush();
+                                        dis.close();
+                                        // è¯»å–ç›®æ ‡å®¢æˆ·çš„æç¤ºä¿å­˜å®Œæ¯•çš„ä¿¡æ¯...
+                                        BufferedReader br = new BufferedReader(
+                                                new InputStreamReader(
+                                                        s.getInputStream()));
+                                        textArea.append(br.readLine() + "\r\n");
+                                        isSendFile = false;
+                                        br.close();
+                                        s.close();
+                                    } catch (Exception ex) {
+                                        ex.printStackTrace();
+                                    }
+
+                                }
+                            }.start();
+                            break;
+                        }
+                        case 4: {
+                            textArea.append(bean.getInfo() + "\r\n");
+                            break;
+                        }
+                        case 6: { // è¯·æ±‚å¥½å‹
+                            // æ˜¾ç¤ºæ˜¯å¦æˆä¸ºå¥½å‹å¯¹è¯æ¡†
+                            int result = JOptionPane.showConfirmDialog(
+                                    getContentPane(), bean.getInfo());
+                            switch (result) {
+                                case 0: {//æ¥å—å¥½å‹è¯·æ±‚
+                                    System.out.println("from " + bean.getName() + ",to " + bean.getClients());
+                                    // åˆ›å»ºå®¢æˆ·CatBean
+                                    CatBean clientBean = new CatBean();
+                                    clientBean.setType(7);
+                                    clientBean.setName(name);
+                                    clientBean.setInfo("ç¡®å®šæˆä¸ºå¥½å‹");
+                                    // åˆ¤æ–­è¦å‘é€ç»™è°
+                                    HashSet<String> set = new HashSet<String>();
+                                    set.add(bean.getName());
+                                    clientBean.setClients(set); // æ–‡ä»¶æ¥æº
+                                    clientBean.setTo(bean.getClients());// ç»™è¿™äº›å®¢æˆ·å‘é€æ–‡ä»¶
+                                    sendMessage(clientBean);
+                                    textArea.append(bean.getName()
+                                            + "å·²æˆä¸ºä½ çš„å¥½å‹,å¼€å§‹èŠå¤©å§\r\n");
+                                    friends.add(bean.getName());
+                                    onlines.add(bean.getName());
+                                    listmodel = new UUListModel(onlines);
+                                    list.setModel(listmodel);
+
+                                    break;
+                                }
+                                default: {//æ‹’æ¥å¥½å‹è¯·æ±‚
+                                    CatBean clientBean = new CatBean();
+                                    clientBean.setType(4);
+                                    clientBean.setName(name); // æ¥æ”¶æ–‡ä»¶çš„å®¢æˆ·åå­—
+                                    clientBean.setTimer(CatUtil.getTimer());
+                                    clientBean.setInfo(CatUtil.getTimer()
+                                            + "  " + name + "æ‹’ç»å¥½å‹è¯·æ±‚");
+                                    // åˆ¤æ–­è¦å‘é€ç»™è°
+                                    HashSet<String> set = new HashSet<String>();
+                                    set.add(bean.getName());
+                                    clientBean.setClients(set); // æ–‡ä»¶æ¥æº
+                                    clientBean.setTo(bean.getClients());// ç»™è¿™äº›å®¢æˆ·å‘é€æ–‡ä»¶
+                                    sendMessage(clientBean);
+                                }
+                            }
+
+                            break;
+                        }
+                        case 7: { // ç¡®å®šæˆä¸ºå¥½å‹
+                            textArea.append(bean.getName()
+                                    + "å·²æˆä¸ºä½ çš„å¥½å‹,å¼€å§‹èŠå¤©å§\r\n");
+
+                            friends.add(bean.getName());
+                            onlines.add(bean.getName());
+                            listmodel = new UUListModel(onlines);
+                            list.setModel(listmodel);
+
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
+
+                }
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } finally {
+                if (clientSocket != null) {
+                    try {
+                        clientSocket.close();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+                System.exit(0);
+            }
+        }
+    }
+
+    private void sendMessage(CatBean clientBean) {
+        try {
+            oos = new ObjectOutputStream(clientSocket.getOutputStream());
+            oos.writeObject(clientBean);
+            oos.flush();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
 }

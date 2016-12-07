@@ -12,272 +12,356 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-import cat.function.CatBean;
-import cat.function.ClientBean;
+import cat.dao.HibernateDao;
+import cat.function.*;
 
 public class CatServer {
-	private static ServerSocket ss;
-	public static HashMap<String, ClientBean> onlines;
-	static {
-		try {
-			ss = new ServerSocket(8520);
-			onlines = new HashMap<String, ClientBean>();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    private static ServerSocket ss;
+    public static HashMap<String, ClientBean> onlines;
 
-	class CatClientThread extends Thread {
-		private Socket client;
-		private CatBean bean;
-		private ObjectInputStream ois;
-		private ObjectOutputStream oos;
+    static {
+        try {
+            ss = new ServerSocket(8520);
+            onlines = new HashMap<String, ClientBean>();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
-		public CatClientThread(Socket client) {
-			this.client = client;
-		}
+    class CatClientThread extends Thread {
+        private Socket client;
+        private CatBean bean;
+        private ObjectInputStream ois;
+        private ObjectOutputStream oos;
 
-		@Override
-		public void run() {
-			try {
-				// ²»Í£µÄ´Ó¿Í»§¶Ë½ÓÊÕĞÅÏ¢
-				while (true) {
-					// ¶ÁÈ¡´Ó¿Í»§¶Ë½ÓÊÕµ½µÄcatbeanĞÅÏ¢
-					ois = new ObjectInputStream(client.getInputStream());
-					bean = (CatBean)ois.readObject();
-					
-					// ·ÖÎöcatbeanÖĞ£¬typeÊÇÄÇÑùÒ»ÖÖÀàĞÍ
-					switch (bean.getType()) {
-					// ÉÏÏÂÏß¸üĞÂ
-					case 0: { // ÉÏÏß
-						// ¼ÇÂ¼ÉÏÏß¿Í»§µÄÓÃ»§ÃûºÍ¶Ë¿ÚÔÚclientbeanÖĞ
-						ClientBean cbean = new ClientBean();
-						cbean.setName(bean.getName());
-						cbean.setSocket(client);
-						// Ìí¼ÓÔÚÏßÓÃ»§
-						onlines.put(bean.getName(), cbean);
-						// ´´½¨·şÎñÆ÷µÄcatbean£¬²¢·¢ËÍ¸ø¿Í»§¶Ë
-						CatBean serverBean = new CatBean();
-						serverBean.setType(0);
-						serverBean.setInfo(bean.getTimer() + "  "
-								+ bean.getName() + "ÉÏÏßÁË");
-						// Í¨ÖªËùÓĞ¿Í»§ÓĞÈËÉÏÏß
-						HashSet<String> set = new HashSet<String>();
-						// ¿Í»§êÇ³Æ
-						set.addAll(onlines.keySet());
-						serverBean.setClients(set);
-						sendAll(serverBean);
-						break;
-					}
-					case -1: { // ÏÂÏß
-						// ´´½¨·şÎñÆ÷µÄcatbean£¬²¢·¢ËÍ¸ø¿Í»§¶Ë
-						CatBean serverBean = new CatBean();
-						serverBean.setType(-1);
+        public CatClientThread(Socket client) {
+            this.client = client;
+        }
 
-						try {
-							oos = new ObjectOutputStream(
-									client.getOutputStream());
-							oos.writeObject(serverBean);
-							oos.flush();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+        @Override
+        public void run() {
+            try {
+                // ä¸åœçš„ä»å®¢æˆ·ç«¯æ¥æ”¶ä¿¡æ¯
+                while (true) {
+                    // è¯»å–ä»å®¢æˆ·ç«¯æ¥æ”¶åˆ°çš„catbeanä¿¡æ¯
+                    ois = new ObjectInputStream(client.getInputStream());
+                    bean = (CatBean) ois.readObject();
 
-						onlines.remove(bean.getName());
+                    // åˆ†æcatbeanä¸­ï¼Œtypeæ˜¯é‚£æ ·ä¸€ç§ç±»å‹
+                    switch (bean.getType()) {
+                        // ä¸Šä¸‹çº¿æ›´æ–°
+                        case 0: { // ä¸Šçº¿
+                            // è®°å½•ä¸Šçº¿å®¢æˆ·çš„ç”¨æˆ·åå’Œç«¯å£åœ¨clientbeanä¸­
+                            ClientBean cbean = new ClientBean();
+                            cbean.setName(bean.getName());
+                            cbean.setSocket(client);
+                            // æ·»åŠ åœ¨çº¿ç”¨æˆ·
+                            onlines.put(bean.getName(), cbean);
+                            // åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+                            CatBean serverBean = new CatBean();
+                            serverBean.setType(0);
+                            serverBean.setInfo(bean.getTimer() + "  "
+                                    + bean.getName() + "ä¸Šçº¿äº†");
+                            // é€šçŸ¥æ‰€æœ‰å®¢æˆ·æœ‰äººä¸Šçº¿
+                            HashSet<String> set = new HashSet<String>();
+                            // å®¢æˆ·æ˜µç§°
+                            set.addAll(onlines.keySet());
+                            serverBean.setClients(set);
+                            sendAll(serverBean);
 
-						// ÏòÊ£ÏÂµÄÔÚÏßÓÃ»§·¢ËÍÓĞÈËÀë¿ªµÄÍ¨Öª
-						CatBean serverBean2 = new CatBean();
-						serverBean2.setInfo(bean.getTimer() + "  "
-								+ bean.getName() + " " + " ÏÂÏßÁË");
-						serverBean2.setType(0);
-						HashSet<String> set = new HashSet<String>();
-						set.addAll(onlines.keySet());
-						serverBean2.setClients(set);
+                            System.out.println();
+                            UserBean userBean= (UserBean) HibernateDao.get(UserBean.class,bean.getName());
+                            userBean.setIsOnline(1);
+                            HibernateDao.update(userBean);
+                            break;
+                        }
+                        case -1: { // ä¸‹çº¿
+                            // åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+                            CatBean serverBean = new CatBean();
+                            serverBean.setType(-1);
 
-						sendAll(serverBean2);
-						return;
-					}
-					case 1: { // ÁÄÌì
-						
-//						 ´´½¨·şÎñÆ÷µÄcatbean£¬²¢·¢ËÍ¸ø¿Í»§¶Ë
-						CatBean serverBean = new CatBean();
+                            try {
+                                oos = new ObjectOutputStream(
+                                        client.getOutputStream());
+                                oos.writeObject(serverBean);
+                                oos.flush();
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
 
-						serverBean.setType(1);
-						serverBean.setClients(bean.getClients());
-						serverBean.setInfo(bean.getInfo());
-						serverBean.setName(bean.getName());
-						serverBean.setTimer(bean.getTimer());
-						// ÏòÑ¡ÖĞµÄ¿Í»§·¢ËÍÊı¾İ
-						sendMessage(serverBean);
-						break;
-					}
-					case 5: { // ÁÄÌì
-						
-//						 ´´½¨·şÎñÆ÷µÄcatbean£¬²¢·¢ËÍ¸ø¿Í»§¶Ë
-						CatBean serverBean = new CatBean();
+                            onlines.remove(bean.getName());
 
-						serverBean.setType(5);
-						serverBean.setClients(bean.getClients());
-						serverBean.setInfo(bean.getInfo());
-						serverBean.setName(bean.getName());
-						serverBean.setTimer(bean.getTimer());
-						// ÏòÑ¡ÖĞµÄ¿Í»§·¢ËÍÊı¾İ
-						sendAll(serverBean);
-						//sendMessage(serverBean);
-						break;
-					}
-					case 2: { // ÇëÇó½ÓÊÜÎÄ¼ş
-						// ´´½¨·şÎñÆ÷µÄcatbean£¬²¢·¢ËÍ¸ø¿Í»§¶Ë
-						CatBean serverBean = new CatBean();
-						String info = bean.getTimer() + "  " + bean.getName()
-								+ "ÏòÄã´«ËÍÎÄ¼ş,ÊÇ·ñĞèÒª½ÓÊÜ";
+                            // å‘å‰©ä¸‹çš„åœ¨çº¿ç”¨æˆ·å‘é€æœ‰äººç¦»å¼€çš„é€šçŸ¥
+                            CatBean serverBean2 = new CatBean();
+                            serverBean2.setInfo(bean.getTimer() + "  "
+                                    + bean.getName() + " " + " ä¸‹çº¿äº†");
+                            serverBean2.setType(0);
+                            HashSet<String> set = new HashSet<String>();
+                            set.addAll(onlines.keySet());
+                            serverBean2.setClients(set);
 
-						serverBean.setType(2);
-						serverBean.setClients(bean.getClients()); // ÕâÊÇ·¢ËÍµÄÄ¿µÄµØ
-						serverBean.setFileName(bean.getFileName()); // ÎÄ¼şÃû³Æ
-						serverBean.setSize(bean.getSize()); // ÎÄ¼ş´óĞ¡
-						serverBean.setInfo(info);
-						serverBean.setName(bean.getName()); // À´Ô´
-						serverBean.setTimer(bean.getTimer());
-						// ÏòÑ¡ÖĞµÄ¿Í»§·¢ËÍÊı¾İ
-						sendMessage(serverBean);
+                            sendAll(serverBean2);
+                            UserBean userBean= (UserBean) HibernateDao.get(UserBean.class,bean.getName());
+                            userBean.setIsOnline(0);
+                            HibernateDao.update(userBean);
+                            return;
+                        }
+                        case 1: { // èŠå¤©
 
-						break;
-					}
-					case 3: { // È·¶¨½ÓÊÕÎÄ¼ş
-						CatBean serverBean = new CatBean();
+//						 åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+                            CatBean serverBean = new CatBean();
 
-						serverBean.setType(3);
-						serverBean.setClients(bean.getClients()); // ÎÄ¼şÀ´Ô´
-						serverBean.setTo(bean.getTo()); // ÎÄ¼şÄ¿µÄµØ
-						serverBean.setFileName(bean.getFileName()); // ÎÄ¼şÃû³Æ
-						serverBean.setIp(bean.getIp());
-						serverBean.setPort(bean.getPort());
-						serverBean.setName(bean.getName()); // ½ÓÊÕµÄ¿Í»§Ãû³Æ
-						serverBean.setTimer(bean.getTimer());
-						// Í¨ÖªÎÄ¼şÀ´Ô´µÄ¿Í»§£¬¶Ô·½È·¶¨½ÓÊÕÎÄ¼ş
-						sendMessage(serverBean);
-						break;
-					}
-					case 4: {
-						CatBean serverBean = new CatBean();
+                            serverBean.setType(1);
+                            serverBean.setClients(bean.getClients());
+                            serverBean.setInfo(bean.getInfo());
+                            serverBean.setName(bean.getName());
+                            serverBean.setTimer(bean.getTimer());
+                            // å‘é€‰ä¸­çš„å®¢æˆ·å‘é€æ•°æ®
+                            sendMessage(serverBean);
+                            //åœ¨æ•°æ®åº“ä¸­ä¿å­˜ä¸¤æ¡,toä¸€æ¡,fromä¸€æ¡
+                            ChatHistoryBean chatHistoryBean = new ChatHistoryBean();
+                            chatHistoryBean.setMsg_to((String) bean.getClients().toArray()[0]);
+                            chatHistoryBean.setMsg_from(bean.getName());
+                            chatHistoryBean.setTimer(bean.getTimer());
+                            chatHistoryBean.setContent(bean.getInfo());
+                            chatHistoryBean.setUser_name(bean.getName());
+                            HibernateDao.add(chatHistoryBean);
+                            chatHistoryBean.setUser_name((String) bean.getClients().toArray()[0]);
+                            HibernateDao.add(chatHistoryBean);
+                            break;
+                        }
+//					å–æ¶ˆå®¢æˆ·ç«¯å‘å…¨ä½“å‘é€çš„åŠŸèƒ½
+//					case 5: { // èŠå¤©
+//
+////						 åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+//						CatBean serverBean = new CatBean();
+//
+//						serverBean.setType(5);
+//						serverBean.setClients(bean.getClients());
+//						serverBean.setInfo(bean.getInfo());
+//						serverBean.setName(bean.getName());
+//						serverBean.setTimer(bean.getTimer());
+//						// å‘é€‰ä¸­çš„å®¢æˆ·å‘é€æ•°æ®
+//						sendAll(serverBean);
+//						//sendMessage(serverBean);
+//						break;
+//					}
+                        case 2: { // è¯·æ±‚æ¥å—æ–‡ä»¶
+                            // åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+                            CatBean serverBean = new CatBean();
+                            String info = bean.getTimer() + "  " + bean.getName()
+                                    + "å‘ä½ ä¼ é€æ–‡ä»¶,æ˜¯å¦éœ€è¦æ¥å—";
 
-						serverBean.setType(4);
-						serverBean.setClients(bean.getClients()); // ÎÄ¼şÀ´Ô´
-						serverBean.setTo(bean.getTo()); // ÎÄ¼şÄ¿µÄµØ
-						serverBean.setFileName(bean.getFileName());
-						serverBean.setInfo(bean.getInfo());
-						serverBean.setName(bean.getName());// ½ÓÊÕµÄ¿Í»§Ãû³Æ
-						serverBean.setTimer(bean.getTimer());
-						sendMessage(serverBean);
+                            serverBean.setType(2);
+                            serverBean.setClients(bean.getClients()); // è¿™æ˜¯å‘é€çš„ç›®çš„åœ°
+                            serverBean.setFileName(bean.getFileName()); // æ–‡ä»¶åç§°
+                            serverBean.setSize(bean.getSize()); // æ–‡ä»¶å¤§å°
+                            serverBean.setInfo(info);
+                            serverBean.setName(bean.getName()); // æ¥æº
+                            serverBean.setTimer(bean.getTimer());
+                            // å‘é€‰ä¸­çš„å®¢æˆ·å‘é€æ•°æ®
+                            sendMessage(serverBean);
 
-						break;
-					}
-					default: {
-						break;
-					}
-					}
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				close();
-			}
-		}
+                            break;
+                        }
+                        case 3: { // ç¡®å®šæ¥æ”¶æ–‡ä»¶
+                            CatBean serverBean = new CatBean();
 
-		// ÏòÑ¡ÖĞµÄÓÃ»§·¢ËÍÊı¾İ
-		private void sendMessage(CatBean serverBean) {
-			// Ê×ÏÈÈ¡µÃËùÓĞµÄvalues
-			Set<String> cbs = onlines.keySet();
-			Iterator<String> it = cbs.iterator();
-			// Ñ¡ÖĞ¿Í»§
-			HashSet<String> clients = serverBean.getClients();
-			while (it.hasNext()) {
-				// ÔÚÏß¿Í»§
-				String client = it.next();
-				// Ñ¡ÖĞµÄ¿Í»§ÖĞÈôÊÇÔÚÏßµÄ£¬¾Í·¢ËÍserverbean
-				if (clients.contains(client)) {
-					Socket c = onlines.get(client).getSocket();
-					ObjectOutputStream oos;
-					try {
-						oos = new ObjectOutputStream(c.getOutputStream());
-						oos.writeObject(serverBean);
-						oos.flush();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+                            serverBean.setType(3);
+                            serverBean.setClients(bean.getClients()); // æ–‡ä»¶æ¥æº
+                            serverBean.setTo(bean.getTo()); // æ–‡ä»¶ç›®çš„åœ°
+                            serverBean.setFileName(bean.getFileName()); // æ–‡ä»¶åç§°
+                            serverBean.setIp(bean.getIp());
+                            serverBean.setPort(bean.getPort());
+                            serverBean.setName(bean.getName()); // æ¥æ”¶çš„å®¢æˆ·åç§°
+                            serverBean.setTimer(bean.getTimer());
+                            // é€šçŸ¥æ–‡ä»¶æ¥æºçš„å®¢æˆ·ï¼Œå¯¹æ–¹ç¡®å®šæ¥æ”¶æ–‡ä»¶
+                            sendMessage(serverBean);
+                            break;
+                        }
+                        case 4: {
+                            CatBean serverBean = new CatBean();
 
-				}
-			}
-		}
+                            serverBean.setType(4);
+                            serverBean.setClients(bean.getClients()); // æ–‡ä»¶æ¥æº
+                            serverBean.setTo(bean.getTo()); // æ–‡ä»¶ç›®çš„åœ°
+                            serverBean.setFileName(bean.getFileName());
+                            serverBean.setInfo(bean.getInfo());
+                            serverBean.setName(bean.getName());// æ¥æ”¶çš„å®¢æˆ·åç§°
+                            serverBean.setTimer(bean.getTimer());
+                            sendMessage(serverBean);
 
-		// ÏòËùÓĞµÄÓÃ»§·¢ËÍÊı¾İ
-		public void sendAll(CatBean serverBean) {
-			Collection<ClientBean> clients = onlines.values();
-			Iterator<ClientBean> it = clients.iterator();
-			ObjectOutputStream oos;
-			while (it.hasNext()) {
-				Socket c = it.next().getSocket();
-				try {
-					oos = new ObjectOutputStream(c.getOutputStream());
-					oos.writeObject(serverBean);
-					oos.flush();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+                            break;
+                        }
+                        case 6: { // è¯·æ±‚å¥½å‹
+                            // åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+                            //å…ˆæŸ¥æ‰¾æ˜¯å¦æœ‰æ­¤äºº,æœ‰åˆ™è¿”å›å‘é€æˆåŠŸ,æ²¡æœ‰åˆ™è¿”å›æŸ¥æ— æ­¤äºº,ä¸åœ¨çº¿åˆ™è¿”å›ä¸åœ¨çº¿,typeä¸º4
+//                            CatBean serverBean2 = new CatBean();
+//                            String info2 = "å‘é€å¥½å‹è¯·æ±‚æˆåŠŸ";
+//                            HashSet<String>name=new HashSet<String>();
+//                            name.add(bean.getName());
+//                            serverBean2.setClients(name); // è¿™æ˜¯å‘é€çš„ç›®çš„åœ°
+//                            serverBean2.setType(4);
+//                            sendMessage(serverBean2);
 
-		private void close() {
-			if (oos != null) {
-				try {
-					oos.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			if (ois != null) {
-				try {
-					ois.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			if (client != null) {
-				try {
-					client.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+                            CatBean serverBean = new CatBean();
+                            serverBean.setType(6);
+                            // åˆ›å»ºæœåŠ¡å™¨çš„catbeanï¼Œå¹¶å‘é€ç»™å®¢æˆ·ç«¯
+                            String info = bean.getName()
+                                    + "å‘ä½ å‘å‡ºå¥½å‹è¯·æ±‚,æ˜¯å¦éœ€è¦æ¥å—";
+                            serverBean.setClients(bean.getClients()); // è¿™æ˜¯å‘é€çš„ç›®çš„åœ°
+                            serverBean.setInfo(info);
+                            serverBean.setName(bean.getName()); // æ¥æº
+                            serverBean.setTimer(bean.getTimer());
+                            // å‘é€‰ä¸­çš„å®¢æˆ·å‘é€æ•°æ®
+                            sendMessage(serverBean);
 
-	public void start() {
-		try {
-			while (true) {
-				Socket client = ss.accept();
-				new CatClientThread(client).start();
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+                            break;
+                        }
+                        case 7: { // ç¡®å®šæˆä¸ºå¥½å‹
+//                            CatBean serverBean = new CatBean();
+//                            serverBean.setType(7);
+//                            serverBean.setName(bean);
+//                            serverBean.setClients(bean.getClients()); // æ–‡ä»¶æ¥æº
+//                            serverBean.setTo(bean.getTo()); // æ–‡ä»¶ç›®çš„åœ°
+                            // é€šçŸ¥æ–‡ä»¶æ¥æºçš„å®¢æˆ·ï¼Œå¯¹æ–¹ç¡®å®šæ¥æ”¶æ–‡ä»¶
+                            sendMessage(bean);
 
-	public static void main(String[] args) {
-		new CatServer().start();
-	}
+                            FriendBean friendBean=new FriendBean();
+                            friendBean.setUser_name(bean.getName());
+                            String friendName= (String) bean.getClients().toArray()[0];
+                            friendBean.setFriend_name(friendName);
+                            HibernateDao.add(friendBean);
+
+                            FriendBean friendBean2=new FriendBean();
+                            String friendName2= (String) bean.getClients().toArray()[0];
+                            friendBean2.setUser_name(friendName2);
+                            friendBean2.setFriend_name(bean.getName());
+                            HibernateDao.add(friendBean2);
+                            //åœ¨æ•°æ®åº“ä¸­æ·»åŠ ä¸¤æ¡å¥½å‹è®°å½•
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } finally {
+                close();
+            }
+        }
+
+        // å‘é€‰ä¸­çš„ç”¨æˆ·å‘é€æ•°æ®
+        private void sendMessage(CatBean serverBean) {
+            // é¦–å…ˆå–å¾—æ‰€æœ‰çš„values
+            Set<String> cbs = onlines.keySet();
+            Iterator<String> it = cbs.iterator();
+            // é€‰ä¸­å®¢æˆ·
+            HashSet<String> clients = serverBean.getClients();
+            //æ˜¯å¦æœ‰å‘é€
+            boolean is_send = false;
+            while (it.hasNext()) {
+                // åœ¨çº¿å®¢æˆ·
+                String client = it.next();
+                // é€‰ä¸­çš„å®¢æˆ·ä¸­è‹¥æ˜¯åœ¨çº¿çš„ï¼Œå°±å‘é€serverbean
+                if (clients.contains(client)) {
+                    is_send = true;
+                    Socket c = onlines.get(client).getSocket();
+                    ObjectOutputStream oos;
+                    try {
+                        oos = new ObjectOutputStream(c.getOutputStream());
+                        oos.writeObject(serverBean);
+                        oos.flush();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+            if (!is_send) {
+                System.out.println(clients + " has offline");
+                CatBean catBean = new CatBean();
+                HashSet<String> set = new HashSet<String>();
+                System.out.println("from :" + serverBean.getName() + " to:" + serverBean.getClients());
+                set.add(serverBean.getName());
+                catBean.setClients(set);
+                catBean.setType(4);
+                String name = (String) serverBean.getClients().toArray()[0];
+                catBean.setInfo(name + "ä¸åœ¨çº¿æˆ–ä¸å­˜åœ¨");
+                sendMessage(catBean);
+
+            }
+        }
+
+        // å‘æ‰€æœ‰çš„ç”¨æˆ·å‘é€æ•°æ®
+        public void sendAll(CatBean serverBean) {
+            Collection<ClientBean> clients = onlines.values();
+            Iterator<ClientBean> it = clients.iterator();
+            ObjectOutputStream oos;
+            while (it.hasNext()) {
+                Socket c = it.next().getSocket();
+                try {
+                    oos = new ObjectOutputStream(c.getOutputStream());
+                    oos.writeObject(serverBean);
+                    oos.flush();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        private void close() {
+            if (oos != null) {
+                try {
+                    oos.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            if (ois != null) {
+                try {
+                    ois.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void start() {
+        try {
+            while (true) {
+                Socket client = ss.accept();
+                new CatClientThread(client).start();
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        new CatServer().start();
+    }
 
 }

@@ -10,7 +10,7 @@ import java.util.Properties;
 
 public class CatUtil {
 
-	// Properties加载文件信息
+	// Properties鍔犺浇鏂囦欢淇℃伅
 	public static void loadPro(Properties pro, File file) {
 		if (!file.exists()) {
 			try {

@@ -19,6 +19,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import cat.dao.HibernateDao;
+import cat.function.UserBean;
 import cat.util.CatUtil;
 
 public class CatResign extends JFrame {
@@ -30,7 +32,7 @@ public class CatResign extends JFrame {
 	private JLabel lblNewLabel;
 
 	public CatResign() {
-		setTitle("×¢²á\n");
+		setTitle("æ³¨å†Œ\n");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(350, 250, 450, 300);
 		contentPane = new JPanel() {
@@ -39,7 +41,7 @@ public class CatResign extends JFrame {
 			@Override
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
-				g.drawImage(new ImageIcon("images\\22.jpg").getImage(), 0,0, getWidth(), getHeight(), null);
+				g.drawImage(new ImageIcon("images/22.jpg").getImage(), 0,0, getWidth(), getHeight(), null);
 			}
 		};
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -63,87 +65,113 @@ public class CatResign extends JFrame {
 		passwordField_1.setOpaque(false);
 		contentPane.add(passwordField_1);
 
-		//×¢²á°´Å¥
+		//æ³¨å†ŒæŒ‰é’®
 		final JButton btnNewButton_1 = new JButton();
-		btnNewButton_1.setIcon(new ImageIcon("images\\66.png"));
+		btnNewButton_1.setIcon(new ImageIcon("images/66.png"));
 		btnNewButton_1.setBounds(320, 198, 80, 40);
 		getRootPane().setDefaultButton(btnNewButton_1);
 		contentPane.add(btnNewButton_1);
 
-		//·µ»Ø°´Å¥
+		//è¿”å›æŒ‰é’®
 		final JButton btnNewButton = new JButton("");
-		btnNewButton.setIcon(new ImageIcon("images\\55.png"));
+		btnNewButton.setIcon(new ImageIcon("images/55.png"));
 		btnNewButton.setBounds(230, 198, 80, 40);
 		contentPane.add(btnNewButton);
 
-		//ÌáÊ¾ĞÅÏ¢
+		//æç¤ºä¿¡æ¯
 		lblNewLabel = new JLabel();
 		lblNewLabel.setBounds(55, 218, 185, 20);
 		lblNewLabel.setForeground(Color.red);
 		contentPane.add(lblNewLabel);
 		
-		//·µ»Ø°´Å¥¼àÌı
+		//è¿”å›æŒ‰é’®ç›‘å¬
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnNewButton.setEnabled(false);
-				//·µ»ØµÇÂ½½çÃæ
+				//è¿”å›ç™»é™†ç•Œé¢
 				CatLogin frame = new CatLogin();
 				frame.setVisible(true);
 				setVisible(false);
 			}
 		});
 		
-		//×¢²á°´Å¥¼àÌı
+		//æ³¨å†ŒæŒ‰é’®ç›‘å¬
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Properties userPro = new Properties();
-				File file = new File("Users.properties");
-				CatUtil.loadPro(userPro, file);
-				
 				String u_name = textField.getText();
 				String u_pwd = new String(passwordField.getPassword());
 				String u_pwd_ag = new String(passwordField_1.getPassword());
-
-				// ÅĞ¶ÏÓÃ»§ÃûÊÇ·ñÔÚÆÕÍ¨ÓÃ»§ÖĞÒÑ´æÔÚ
-				if (u_name.length() != 0) {
-					
-					if (userPro.containsKey(u_name)) {
-						lblNewLabel.setText("ÓÃ»§ÃûÒÑ´æÔÚ!");
-					} else {
-						isPassword(userPro, file, u_name, u_pwd, u_pwd_ag);
-					}
-				} else {
-					lblNewLabel.setText("ÓÃ»§Ãû²»ÄÜÎª¿Õ£¡");
-				}
-			}
-
-			private void isPassword(Properties userPro,
-					File file, String u_name, String u_pwd, String u_pwd_ag) {
-				if (u_pwd.equals(u_pwd_ag)) {
-					if (u_pwd.length() != 0) {
-						userPro.setProperty(u_name, u_pwd_ag);
-						try {
-							userPro.store(new FileOutputStream(file),
-									"Copyright (c) Boxcode Studio");
-						} catch (FileNotFoundException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+				if (u_name.length() != 0){
+					UserBean userBean = (UserBean) HibernateDao.get(UserBean.class, u_name);
+					if (userBean==null){
+						if (u_pwd.length()!=0&&u_pwd_ag.length()!=0){
+							if (u_pwd.equals(u_pwd_ag)) {
+								userBean=new UserBean();
+								userBean.setPassword(u_pwd);
+								userBean.setName(u_name);
+								HibernateDao.add(userBean);
+								CatLogin frame = new CatLogin();
+								frame.setVisible(true);
+								setVisible(false);
+							}else {
+								lblNewLabel.setText("å¯†ç ä¸ä¸€è‡´ï¼");
+							}
+						}else {
+							lblNewLabel.setText("å¯†ç ä¸ºç©ºï¼");
 						}
-						btnNewButton_1.setEnabled(false);
-						//·µ»ØµÇÂ½½çÃæ
-						CatLogin frame = new CatLogin();
-						frame.setVisible(true);
-						setVisible(false);
-					} else {
-						lblNewLabel.setText("ÃÜÂëÎª¿Õ£¡");
+
+					}else {
+						lblNewLabel.setText("ç”¨æˆ·åå·²å­˜åœ¨!");
 					}
-				} else {
-					lblNewLabel.setText("ÃÜÂë²»Ò»ÖÂ£¡");
+				}else {
+					lblNewLabel.setText("ç”¨æˆ·åä¸èƒ½ä¸ºç©ºï¼");
 				}
+
+//				Properties userPro = new Properties();
+//				File file = new File("Users.properties");
+//				CatUtil.loadPro(userPro, file);
+//
+//
+//				// åˆ¤æ–­ç”¨æˆ·åæ˜¯å¦åœ¨æ™®é€šç”¨æˆ·ä¸­å·²å­˜åœ¨
+//				if (u_name.length() != 0) {
+//
+//					if (userPro.containsKey(u_name)) {
+//						lblNewLabel.setText("ç”¨æˆ·åå·²å­˜åœ¨!");
+//					} else {
+//						isPassword(userPro, file, u_name, u_pwd, u_pwd_ag);
+//					}
+//				} else {
+//					lblNewLabel.setText("ç”¨æˆ·åä¸èƒ½ä¸ºç©ºï¼");
+//				}
 			}
+
+//			private void isPassword(Properties userPro,
+//					File file, String u_name, String u_pwd, String u_pwd_ag) {
+//				if (u_pwd.equals(u_pwd_ag)) {
+//					if (u_pwd.length() != 0) {
+//						userPro.setProperty(u_name, u_pwd_ag);
+//						try {
+//							userPro.store(new FileOutputStream(file),
+//									"Copyright (c) Boxcode Studio");
+//						} catch (FileNotFoundException e1) {
+//							// TODO Auto-generated catch block
+//							e1.printStackTrace();
+//						} catch (IOException e1) {
+//							// TODO Auto-generated catch block
+//							e1.printStackTrace();
+//						}
+//						btnNewButton_1.setEnabled(false);
+//						//è¿”å›ç™»é™†ç•Œé¢
+//						CatLogin frame = new CatLogin();
+//						frame.setVisible(true);
+//						setVisible(false);
+//					} else {
+//						lblNewLabel.setText("å¯†ç ä¸ºç©ºï¼");
+//					}
+//				} else {
+//					lblNewLabel.setText("å¯†ç ä¸ä¸€è‡´ï¼");
+//				}
+//			}
 		});
 	}
 }

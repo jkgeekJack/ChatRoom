@@ -14,7 +14,6 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Properties;
 
-import javafx.scene.text.Font;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -27,154 +26,199 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import cat.client.CatChatroom;
+import cat.dao.HibernateDao;
 import cat.function.CatBean;
 import cat.function.ClientBean;
+import cat.function.UserBean;
 import cat.util.CatUtil;
 
 public class CatLogin extends JFrame {
 
-	private JPanel contentPane;
-	private JTextField textField;
-	private JPasswordField passwordField;
-	public static HashMap<String, ClientBean> onlines;
+    private JPanel contentPane;
+    private JTextField textField;
+    private JPasswordField passwordField;
+    public static HashMap<String, ClientBean> onlines;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					// Æô¶¯µÇÂ½½çÃæ
-					CatLogin frame = new CatLogin();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+    /**
+     * Launch the application.
+     */
+    public static void main(String[] args) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    // å¯åŠ¨ç™»é™†ç•Œé¢
+                    CatLogin frame = new CatLogin();
+                    frame.setVisible(true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
-	/**
-	 * Create the frame.
-	 */
-	public CatLogin() {
-		setTitle("µÇÂ½\n");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(350, 250, 450, 300);
-		contentPane = new JPanel() {
-			private static final long serialVersionUID = 1L;
+    /**
+     * Create the frame.
+     */
+    public CatLogin() {
+        setTitle("ç™»é™†\n");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(350, 250, 450, 300);
+        contentPane = new JPanel() {
+            private static final long serialVersionUID = 1L;
 
-			@Override
-			protected void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				g.drawImage(new ImageIcon(
-						"images\\11.jpg").getImage(), 0,
-						0, getWidth(), getHeight(), null);
-			}
-		};
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(null);
-		textField = new JTextField();
-		textField.setForeground(Color.red);
-		textField.setBounds(128, 153, 104, 24);
-		textField.setOpaque(false);
-		contentPane.add(textField);
-		textField.setColumns(10);
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon(
+                                "images/11.jpg").getImage(), 0,
+                        0, getWidth(), getHeight(), null);
+            }
+        };
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        setContentPane(contentPane);
+        contentPane.setLayout(null);
+        textField = new JTextField();
+        textField.setForeground(Color.red);
+        textField.setBounds(128, 153, 104, 24);
+        textField.setOpaque(false);
+        contentPane.add(textField);
+        textField.setColumns(10);
 
-		passwordField = new JPasswordField();
-		passwordField.setForeground(Color.red);
-		passwordField.setEchoChar('*');
-		passwordField.setOpaque(false);
-		passwordField.setBounds(128, 189, 104, 25);
-		contentPane.add(passwordField);
+        passwordField = new JPasswordField();
+        passwordField.setForeground(Color.red);
+        passwordField.setEchoChar('*');
+        passwordField.setOpaque(false);
+        passwordField.setBounds(128, 189, 104, 25);
+        contentPane.add(passwordField);
 
-		final JButton btnNewButton = new JButton();
-		btnNewButton.setIcon(new ImageIcon("images\\33.png"));
-		btnNewButton.setBounds(246, 227, 50, 25);
-		getRootPane().setDefaultButton(btnNewButton);
-		contentPane.add(btnNewButton);
+        final JButton btnNewButton = new JButton();
+        btnNewButton.setIcon(new ImageIcon("images/33.png"));
+        btnNewButton.setBounds(246, 227, 50, 25);
+        getRootPane().setDefaultButton(btnNewButton);
+        contentPane.add(btnNewButton);
 
-		final JButton btnNewButton_1 = new JButton();
-		btnNewButton_1.setIcon(new ImageIcon("images\\44.png"));
-		btnNewButton_1.setBounds(317, 227, 50, 25);
-		contentPane.add(btnNewButton_1);
+        final JButton btnNewButton_1 = new JButton();
+        btnNewButton_1.setIcon(new ImageIcon("images/44.png"));
+        btnNewButton_1.setBounds(317, 227, 50, 25);
+        contentPane.add(btnNewButton_1);
 
-		// ÌáÊ¾ĞÅÏ¢
-		final JLabel lblNewLabel = new JLabel();
-		lblNewLabel.setBounds(60, 220, 151, 21);
-		lblNewLabel.setForeground(Color.red);
-		getContentPane().add(lblNewLabel);
+        // æç¤ºä¿¡æ¯
+        final JLabel lblNewLabel = new JLabel();
+        lblNewLabel.setBounds(60, 220, 151, 21);
+        lblNewLabel.setForeground(Color.red);
+        getContentPane().add(lblNewLabel);
 
-		// ¼àÌıµÇÂ½°´Å¥
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Properties userPro = new Properties();
-				File file = new File("Users.properties");
-				CatUtil.loadPro(userPro, file);
-				String u_name = textField.getText();
-				if (file.length() != 0) {
+        // ç›‘å¬ç™»é™†æŒ‰é’®
+        btnNewButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String u_name = textField.getText();
+                UserBean userBean = (UserBean) HibernateDao.get(UserBean.class, u_name);
+                if (userBean != null) {
+                    if (userBean.getIsOnline()==0){
+                        String u_pwd = new String(passwordField.getPassword());
+                        if (u_pwd.equals(userBean.getPassword())) {
+                            try {
+                                Socket client = new Socket("localhost", 8520);
 
-					if (userPro.containsKey(u_name)) {
-						String u_pwd = new String(passwordField.getPassword());
-						if (u_pwd.equals(userPro.getProperty(u_name))) {
+                                btnNewButton.setEnabled(false);
+                                CatChatroom frame = new CatChatroom(u_name,
+                                        client);
+                                frame.setVisible(true);// æ˜¾ç¤ºèŠå¤©ç•Œé¢
+                                setVisible(false);// éšè—æ‰ç™»é™†ç•Œé¢
 
-							try {
-								Socket client = new Socket("localhost", 8520);
+                            } catch (UnknownHostException e1) {
+                                // TODO Auto-generated catch block
+//								errorTip("The connection with the server is interrupted, please login again");
+                                errorTip("è¿æ¥æœåŠ¡å™¨å¤±è´¥,è¯·æ£€æŸ¥åé‡æ–°è¿æ¥");
+                            } catch (IOException e1) {
+                                // TODO Auto-generated catch block
+//								errorTip("The connection with the server is interrupted, please login again");
+                                errorTip("è¿æ¥æœåŠ¡å™¨å¤±è´¥,è¯·æ£€æŸ¥åé‡æ–°è¿æ¥");
+                            }
+                        } else {
+                            lblNewLabel.setText("æ‚¨è¾“å…¥çš„å¯†ç æœ‰è¯¯ï¼");
+                            textField.setText("");
+                            passwordField.setText("");
+                            textField.requestFocus();
+                        }
+                    }else {
+                        lblNewLabel.setText("è¯¥è´¦å·å·²ç»ç™»å½•ï¼");
+                        textField.setText("");
+                        passwordField.setText("");
+                        textField.requestFocus();
+                    }
+                } else {
+                    lblNewLabel.setText("æ‚¨è¾“å…¥æ˜µç§°ä¸å­˜åœ¨ï¼");
+                    textField.setText("");
+                    passwordField.setText("");
+                    textField.requestFocus();
+                }
+//				Properties userPro = new Properties();
+//				File file = new File("Users.properties");
+//				CatUtil.loadPro(userPro, file);
+//				if (file.length() != 0) {
+//
+//					if (userPro.containsKey(u_name)) {
+//						String u_pwd = new String(passwordField.getPassword());
+//						if (u_pwd.equals(userPro.getProperty(u_name))) {
+//
+//							try {
+//								Socket client = new Socket("localhost", 8520);
+//
+//								btnNewButton.setEnabled(false);
+//								CatChatroom frame = new CatChatroom(u_name,
+//										client);
+//								frame.setVisible(true);// æ˜¾ç¤ºèŠå¤©ç•Œé¢
+//								setVisible(false);// éšè—æ‰ç™»é™†ç•Œé¢
+//
+//							} catch (UnknownHostException e1) {
+//								// TODO Auto-generated catch block
+////								errorTip("The connection with the server is interrupted, please login again");
+//								errorTip("è¿æ¥æœåŠ¡å™¨å¤±è´¥,è¯·æ£€æŸ¥åé‡æ–°è¿æ¥");
+//							} catch (IOException e1) {
+//								// TODO Auto-generated catch block
+////								errorTip("The connection with the server is interrupted, please login again");
+//								errorTip("è¿æ¥æœåŠ¡å™¨å¤±è´¥,è¯·æ£€æŸ¥åé‡æ–°è¿æ¥");
+//							}
+//
+//						} else {
+//							lblNewLabel.setText("æ‚¨è¾“å…¥çš„å¯†ç æœ‰è¯¯ï¼");
+//							textField.setText("");
+//							passwordField.setText("");
+//							textField.requestFocus();
+//						}
+//					} else {
+//						lblNewLabel.setText("æ‚¨è¾“å…¥æ˜µç§°ä¸å­˜åœ¨ï¼");
+//						textField.setText("");
+//						passwordField.setText("");
+//						textField.requestFocus();
+//					}
+//				} else {
+//					lblNewLabel.setText("æ‚¨è¾“å…¥æ˜µç§°ä¸å­˜åœ¨ï¼");
+//					textField.setText("");
+//					passwordField.setText("");
+//					textField.requestFocus();
+//				}
+            }
+        });
 
-								btnNewButton.setEnabled(false);
-								CatChatroom frame = new CatChatroom(u_name,
-										client);
-								frame.setVisible(true);// ÏÔÊ¾ÁÄÌì½çÃæ
-								setVisible(false);// Òş²ØµôµÇÂ½½çÃæ
+        //æ³¨å†ŒæŒ‰é’®ç›‘å¬
+        btnNewButton_1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                btnNewButton_1.setEnabled(false);
+                CatResign frame = new CatResign();
+                frame.setVisible(true);// æ˜¾ç¤ºæ³¨å†Œç•Œé¢
+                setVisible(false);// éšè—æ‰ç™»é™†ç•Œé¢
+            }
+        });
+    }
 
-							} catch (UnknownHostException e1) {
-								// TODO Auto-generated catch block
-								errorTip("The connection with the server is interrupted, please login again");
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								errorTip("The connection with the server is interrupted, please login again");
-							}
-
-						} else {
-							lblNewLabel.setText("ÄúÊäÈëµÄÃÜÂëÓĞÎó£¡");
-							textField.setText("");
-							passwordField.setText("");
-							textField.requestFocus();
-						}
-					} else {
-						lblNewLabel.setText("ÄúÊäÈëêÇ³Æ²»´æÔÚ£¡");
-						textField.setText("");
-						passwordField.setText("");
-						textField.requestFocus();
-					}
-				} else {
-					lblNewLabel.setText("ÄúÊäÈëêÇ³Æ²»´æÔÚ£¡");
-					textField.setText("");
-					passwordField.setText("");
-					textField.requestFocus();
-				}
-			}
-		});
-
-		//×¢²á°´Å¥¼àÌı
-		btnNewButton_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				btnNewButton_1.setEnabled(false);
-				CatResign frame = new CatResign();
-				frame.setVisible(true);// ÏÔÊ¾×¢²á½çÃæ
-				setVisible(false);// Òş²ØµôµÇÂ½½çÃæ
-			}
-		});
-	}
-
-	protected void errorTip(String str) {
-		// TODO Auto-generated method stub
-		JOptionPane.showMessageDialog(contentPane, str, "Error Message",
-				JOptionPane.ERROR_MESSAGE);
-		textField.setText("");
-		passwordField.setText("");
-		textField.requestFocus();
-	}
+    protected void errorTip(String str) {
+        // TODO Auto-generated method stub
+        JOptionPane.showMessageDialog(contentPane, str, "Error Message",
+                JOptionPane.ERROR_MESSAGE);
+        textField.setText("");
+        passwordField.setText("");
+        textField.requestFocus();
+    }
 }

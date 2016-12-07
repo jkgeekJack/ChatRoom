@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class CatBean implements Serializable {
-	private int type; // 1Ë½ÁÄ 0ÉÏÏÂÏß¸üĞÂ -1ÏÂÏßÇëÇó 2ÇëÇó·¢ËÍÎÄ¼ş 3.È·¶¨½ÓÊÕÎÄ¼ş
+	private int type; // 1ç§èŠ 0ä¸Šä¸‹çº¿æ›´æ–° -1ä¸‹çº¿è¯·æ±‚ 2è¯·æ±‚å‘é€æ–‡ä»¶ 3.ç¡®å®šæ¥æ”¶æ–‡ä»¶
 
-	private HashSet<String> clients; // ´æ·ÅÑ¡ÖĞµÄ¿Í»§
+	private HashSet<String> clients; // å­˜æ”¾é€‰ä¸­çš„å®¢æˆ·
 
 	private HashSet<String> to;
 	
