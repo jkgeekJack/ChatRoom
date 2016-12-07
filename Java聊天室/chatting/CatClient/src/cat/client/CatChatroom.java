@@ -137,17 +137,6 @@ public class CatChatroom extends JFrame {
         setResizable(false);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setBounds(200, 100, 688, 510);
-//		contentPane = new JPanel() {
-//			private static final long serialVersionUID = 1L;
-//
-//			@Override
-//			protected void paintComponent(Graphics g) {
-//				super.paintComponent(g);
-//				g.drawImage(new ImageIcon("images\\77.jpg").getImage(), 0, 0,
-//						getWidth(), getHeight(), null);
-//			}
-//
-//		};
         contentPane = new JPanel();
         setContentPane(contentPane);
         contentPane.setLayout(null);

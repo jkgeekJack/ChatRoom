@@ -1,7 +1,6 @@
 package cat.login;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -18,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 
 import cat.dao.HibernateDao;
 import cat.function.UserBean;
@@ -31,57 +31,93 @@ public class CatResign extends JFrame {
 	private JPasswordField passwordField_1;
 	private JLabel lblNewLabel;
 
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					// 启动登陆界面
+					CatResign frame = new CatResign();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
 	public CatResign() {
 		setTitle("注册\n");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(350, 250, 450, 300);
-		contentPane = new JPanel() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				g.drawImage(new ImageIcon("images/22.jpg").getImage(), 0,0, getWidth(), getHeight(), null);
-			}
-		};
+		contentPane = new JPanel();
+		contentPane.setBackground(new Color(64,65,76));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
+		JLabel icon=new JLabel();
+
+		icon.setBounds(120,80,60,100);
+		contentPane.add(icon);
+
 		textField = new JTextField();
-		textField.setBounds(150, 42, 104, 21);
-		textField.setOpaque(false);
+		textField.setBounds(150, 80, 200,30);
+		Font font = new Font("黑体", Font.BOLD, 20);
+		MatteBorder border = new MatteBorder(0, 0, 2, 0, new Color(192, 192,
+				192));
+		textField.setBorder(border);
+		textField.setFont(font);
 		contentPane.add(textField);
+		textField.setToolTipText("请输入账号");
 		textField.setColumns(10);
+		JLabel jLabel=new JLabel(new ImageIcon("images/user.png"));
+		jLabel.setBounds(120,80,30,30);
+		contentPane.add(jLabel);
 
 		passwordField = new JPasswordField();
 		passwordField.setEchoChar('*');
-		passwordField.setOpaque(false);
-		passwordField.setBounds(190, 98, 104, 21);
+		passwordField.setFont(font);
+		passwordField.setBorder(border);
+		passwordField.setToolTipText("请输入密码");
+		passwordField.setBounds(150, 110, 200, 30);
 		contentPane.add(passwordField);
+		JLabel jLabe2=new JLabel(new ImageIcon("images/password.png"));
+		jLabe2.setBounds(120,110,30,30);
+		contentPane.add(jLabe2);
 
 		passwordField_1 = new JPasswordField();
-		passwordField_1.setBounds(192, 152, 104, 21);
-		passwordField_1.setOpaque(false);
+		passwordField_1.setBounds(150, 140, 200, 30);
+		passwordField_1.setFont(font);
+		passwordField_1.setBorder(border);
+		passwordField_1.setToolTipText("确认密码");
 		contentPane.add(passwordField_1);
+		JLabel jLabe3=new JLabel(new ImageIcon("images/password.png"));
+		jLabe3.setBounds(120,140,30,30);
+		contentPane.add(jLabe3);
 
 		//注册按钮
-		final JButton btnNewButton_1 = new JButton();
-		btnNewButton_1.setIcon(new ImageIcon("images/66.png"));
-		btnNewButton_1.setBounds(320, 198, 80, 40);
+		final JButton btnNewButton_1 = new JButton("注册");
+		Font font2 = new Font("华文行楷", Font.BOLD, 20);
+		btnNewButton_1.setFont(font2);
+		btnNewButton_1.setBorder(new EmptyBorder(0,0,0,0));
+		btnNewButton_1.setBounds(120, 200, 230, 30);
 		getRootPane().setDefaultButton(btnNewButton_1);
+		btnNewButton_1.setBackground(new Color(122,183,67));
+		btnNewButton_1.setForeground(Color.white);
 		contentPane.add(btnNewButton_1);
 
 		//返回按钮
-		final JButton btnNewButton = new JButton("");
-		btnNewButton.setIcon(new ImageIcon("images/55.png"));
-		btnNewButton.setBounds(230, 198, 80, 40);
+		final JButton btnNewButton = new JButton("返回登录");
+		btnNewButton.setBorder(new EmptyBorder(0,0,0,0));
+		btnNewButton.setFont(font2);
+		btnNewButton.setBounds(120, 240, 230, 30);
+		btnNewButton.setForeground(Color.white);
+		btnNewButton.setBackground(new Color(56,58,66));
 		contentPane.add(btnNewButton);
 
 		//提示信息
 		lblNewLabel = new JLabel();
-		lblNewLabel.setBounds(55, 218, 185, 20);
-		lblNewLabel.setForeground(Color.red);
+		lblNewLabel.setBounds(150, 50, 185, 20);
+		lblNewLabel.setForeground(Color.WHITE);
 		contentPane.add(lblNewLabel);
 		
 		//返回按钮监听
