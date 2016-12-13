@@ -14,6 +14,7 @@ public class FriendBean {
     private int id;
     private String user_name;
     private String friend_name;
+    private String nick_name;
 
     @Id
     @GeneratedValue
@@ -39,5 +40,13 @@ public class FriendBean {
 
     public void setFriend_name(String friend_name) {
         this.friend_name = friend_name;
+    }
+
+    public String getNick_name() {
+        return nick_name;
+    }
+
+    public void setNick_name(String nick_name) {
+        this.nick_name = nick_name;
     }
 }

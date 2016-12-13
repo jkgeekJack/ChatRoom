@@ -132,22 +132,6 @@ public class CatServer {
                             HibernateDao.add(chatHistoryBean);
                             break;
                         }
-//					取消客户端向全体发送的功能
-//					case 5: { // 聊天
-//
-////						 创建服务器的catbean，并发送给客户端
-//						CatBean serverBean = new CatBean();
-//
-//						serverBean.setType(5);
-//						serverBean.setClients(bean.getClients());
-//						serverBean.setInfo(bean.getInfo());
-//						serverBean.setName(bean.getName());
-//						serverBean.setTimer(bean.getTimer());
-//						// 向选中的客户发送数据
-//						sendAll(serverBean);
-//						//sendMessage(serverBean);
-//						break;
-//					}
                         case 2: { // 请求接受文件
                             // 创建服务器的catbean，并发送给客户端
                             CatBean serverBean = new CatBean();
@@ -233,12 +217,14 @@ public class CatServer {
                             friendBean.setUser_name(bean.getName());
                             String friendName= (String) bean.getClients().toArray()[0];
                             friendBean.setFriend_name(friendName);
+                            friendBean.setNick_name(friendName);
                             HibernateDao.add(friendBean);
 
                             FriendBean friendBean2=new FriendBean();
                             String friendName2= (String) bean.getClients().toArray()[0];
                             friendBean2.setUser_name(friendName2);
                             friendBean2.setFriend_name(bean.getName());
+                            friendBean2.setNick_name(bean.getName());
                             HibernateDao.add(friendBean2);
                             //在数据库中添加两条好友记录
                             break;

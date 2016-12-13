@@ -128,22 +128,20 @@ public class CatChatroom extends JFrame {
         onlines = new Vector();
 
         friends = new Vector();
-//        friends.add("mike");
-//        friends.add("jack");
         SwingUtilities.updateComponentTreeUI(this);
 
 
         setTitle(name);
         setResizable(false);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setBounds(200, 100, 688, 510);
+        setBounds(200, 100, 688, 550);
         contentPane = new JPanel();
         setContentPane(contentPane);
         contentPane.setLayout(null);
 
         // 聊天信息显示区域
         JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setBounds(10, 10, 410, 300);
+        scrollPane.setBounds(10, 10, 410, 375);
         getContentPane().add(scrollPane);
 
         textArea = new JTextArea();
@@ -155,7 +153,7 @@ public class CatChatroom extends JFrame {
 
         // 打字区域
         JScrollPane scrollPane_1 = new JScrollPane();
-        scrollPane_1.setBounds(10, 347, 411, 97);
+        scrollPane_1.setBounds(10, 390, 411, 97);
         getContentPane().add(scrollPane_1);
 
         final JTextArea textArea_1 = new JTextArea();
@@ -173,22 +171,20 @@ public class CatChatroom extends JFrame {
         // 发送按钮
 //		JButton btnNewButton_1 = new JButton("\u53D1\u9001");
         JButton btnNewButton_1 = new JButton("发送");
-        btnNewButton_1.setBounds(100, 448, 60, 30);
+        btnNewButton_1.setBounds(100, 500, 60, 30);
         getRootPane().setDefaultButton(btnNewButton_1);
         getContentPane().add(btnNewButton_1);
 
         // 发送文件按钮
 //		JButton btnNewButton_1 = new JButton("\u53D1\u9001");
         JButton btnFile = new JButton("发送文件");
-        btnFile.setBounds(170, 448, 100, 30);
-        getRootPane().setDefaultButton(btnFile);
+        btnFile.setBounds(170, 500, 100, 30);
         getContentPane().add(btnFile);
 
         // 历史消息按钮
 //		JButton btnNewButton_1 = new JButton("\u53D1\u9001");
         JButton btnHistory = new JButton("历史消息");
-        btnHistory.setBounds(280, 448, 100, 30);
-        getRootPane().setDefaultButton(btnHistory);
+        btnHistory.setBounds(280, 500, 100, 30);
         getContentPane().add(btnHistory);
 
         // 在线客户列表
@@ -232,13 +228,15 @@ public class CatChatroom extends JFrame {
 
         JButton btnAdd = new JButton("添加好友");
         btnAdd.setBounds(430, 460, 100, 30);
-        getRootPane().setDefaultButton(btnAdd);
         getContentPane().add(btnAdd);
 
         JButton btnDelete = new JButton("删除好友");
         btnDelete.setBounds(540, 460, 100, 30);
-        getRootPane().setDefaultButton(btnDelete);
         getContentPane().add(btnDelete);
+
+        JButton btnEdit = new JButton("修改昵称");
+        btnEdit.setBounds(430, 500, 100, 30);
+        getContentPane().add(btnEdit);
 
         try {
             oos = new ObjectOutputStream(clientSocket.getOutputStream());
@@ -278,21 +276,6 @@ public class CatChatroom extends JFrame {
                             "不能向离线用户发送消息");
                     return;
                 }
-//                //取消向全体发送的功能
-//                if (to.toString().contains(name + "(我)")) {
-//                    CatBean clientBean = new CatBean();
-//                    clientBean.setType(5);
-//                    clientBean.setName(name);
-//                    String time = CatUtil.getTimer();
-//                    clientBean.setTimer(time);
-//                    clientBean.setInfo(info);
-//                    HashSet set = new HashSet();
-//                    set.addAll(onlines);
-//                    clientBean.setClients(set);
-//                    sendMessage(clientBean);
-//                    textArea_1.setText(null);
-//                    textArea_1.requestFocus();
-//                }
                 if (info.equals("")) {
                     JOptionPane.showMessageDialog(getContentPane(), "不能发送空信息");
                     return;
@@ -366,7 +349,10 @@ public class CatChatroom extends JFrame {
 
                     // 判断要发送给谁
                     HashSet<String> set = new HashSet<String>();
-                    set.addAll(list.getSelectedValuesList());
+                    int index=list.getSelectedIndex();
+                    System.out.println(name+" send file to "+friends.get(index));
+                    FriendBean friendBean = (FriendBean) HibernateDao.queryOne("select f from FriendBean f where f.user_name =? and f.nick_name=?", new String[]{name, (String) friends.get(index)});
+                    set.add(friendBean.getFriend_name());
                     clientBean.setClients(set);
                     sendMessage(clientBean);
                 }
@@ -390,10 +376,11 @@ public class CatChatroom extends JFrame {
                     JOptionPane.showMessageDialog(getContentPane(), "不能添加自己");
                     return;
                 }
-                if (friends.contains(name)) {
+                if (friends.contains(friendName)) {
                     JOptionPane.showMessageDialog(getContentPane(), "好友已在列表中");
                     return;
                 }
+
                 CatBean catBean = new CatBean();
                 catBean.setType(6);
                 catBean.setName(name);
@@ -401,42 +388,71 @@ public class CatChatroom extends JFrame {
                 set.add(friendName);
                 catBean.setClients(set);
                 sendMessage(catBean);
+                textField.setText("");
             }
         });
 
-        // 关闭按钮
-//		btnNewButton.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				if (isSendFile || isReceiveFile) {
-//					JOptionPane.showMessageDialog(contentPane,
-//							"正在传输文件中，您不能离开...", "Error Message",
-//							JOptionPane.ERROR_MESSAGE);
-//				} else {
-//					btnNewButton.setEnabled(false);
-//					CatBean clientBean = new CatBean();
-//					clientBean.setType(-1);
-//					clientBean.setName(name);
-//					clientBean.setTimer(CatUtil.getTimer());
-//					sendMessage(clientBean);
-//				}
-//			}
-//		});
 
         btnDelete.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int index = list.getSelectedIndex();
                 if (index != -1) {
-                    FriendBean friendBean = (FriendBean) HibernateDao.queryOne("select f from FriendBean f where f.user_name =? and f.friend_name=?", new String[]{name, (String) friends.get(index)});
-                    HibernateDao.delete(friendBean);
-                    friends.remove(index);
-                    onlines.remove(index);
-                    listmodel = new UUListModel(onlines);
-                    list.setModel(listmodel);
-
+                    int result = JOptionPane.showConfirmDialog(
+                            getContentPane(), "您确定要删除好友"+friends.get(index));
+                    if (result==0){
+                        FriendBean friendBean = (FriendBean) HibernateDao.queryOne("select f from FriendBean f where f.user_name =? and f.nick_name=?", new String[]{name, (String) friends.get(index)});
+                        HibernateDao.delete(friendBean);
+                        friends.remove(index);
+                        onlines.remove(index);
+                        listmodel = new UUListModel(onlines);
+                        list.setModel(listmodel);
+                    }
                 } else {
                     JOptionPane.showMessageDialog(getContentPane(), "请选择要删除的好友");
                     return;
                 }
+            }
+        });
+
+        btnEdit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int index = list.getSelectedIndex();
+                if (index != -1) {
+                    String nickName= (String) JOptionPane.showInputDialog(null,"请输入昵称：\n","修改昵称",JOptionPane.PLAIN_MESSAGE,null,null,friends.get(index));
+                    if (nickName.equals("")||nickName==null){
+                        JOptionPane.showMessageDialog(getContentPane(), "昵称不能为空");
+                        return;
+                    }
+
+                    if (friends.contains(nickName)){
+                        JOptionPane.showMessageDialog(getContentPane(), "列表中已经有相同的昵称了");
+                        return;
+                    }
+
+                    System.out.println(nickName);
+                    if (!nickName.equals(friends.get(index))){
+                        FriendBean friendBean = (FriendBean) HibernateDao.queryOne("select f from FriendBean f where f.user_name =? and f.nick_name=?", new String[]{name, (String) friends.get(index)});
+                        System.out.println(friendBean.getUser_name());
+                        friendBean.setNick_name(nickName);
+                        HibernateDao.update(friendBean);
+                        friends.remove(index);
+                        friends.add(index,nickName);
+                        String onlineName= (String) onlines.get(index);
+                        onlines.remove(index);
+                        if (onlineName.contains("离线")){
+                            onlines.add(index,nickName+"(离线)");
+                        }else {
+                            onlines.add(index,nickName);
+                        }
+                        listmodel = new UUListModel(onlines);
+                        list.setModel(listmodel);
+                    }
+
+                } else {
+                    JOptionPane.showMessageDialog(getContentPane(), "请选择要修改昵称的好友");
+                    return;
+                }
+
             }
         });
 
@@ -463,60 +479,6 @@ public class CatChatroom extends JFrame {
             }
         });
 
-        // 列表监听
-        list.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                List to = list.getSelectedValuesList();
-                if (e.getClickCount() == 2) {
-
-                    if (to.toString().contains(name + "(我)")) {
-                        JOptionPane.showMessageDialog(getContentPane(),
-                                "不能向自己发送文件");
-                        return;
-                    }
-                    if (to.toString().contains("离线")) {
-                        JOptionPane.showMessageDialog(getContentPane(),
-                                "不能向离线用户发送文件");
-                        return;
-                    }
-
-                    // 双击打开文件文件选择框
-                    JFileChooser chooser = new JFileChooser();
-                    chooser.setDialogTitle("选择文件框"); // 标题哦...
-                    chooser.showDialog(getContentPane(), "选择"); // 这是按钮的名字..
-
-                    // 判定是否选择了文件
-                    if (chooser.getSelectedFile() != null) {
-                        // 获取路径
-                        filePath = chooser.getSelectedFile().getPath();
-                        File file = new File(filePath);
-                        // 文件为空
-                        if (file.length() == 0) {
-                            JOptionPane.showMessageDialog(getContentPane(),
-                                    filePath + "文件为空,不允许发送.");
-                            return;
-                        }
-
-                        CatBean clientBean = new CatBean();
-                        clientBean.setType(2);// 请求发送文件
-                        clientBean.setSize(new Long(file.length()).intValue());
-                        clientBean.setName(name);
-                        clientBean.setTimer(CatUtil.getTimer());
-                        clientBean.setFileName(file.getName()); // 记录文件的名称
-                        clientBean.setInfo("请求发送文件");
-
-                        // 判断要发送给谁
-                        HashSet<String> set = new HashSet<String>();
-                        set.addAll(list.getSelectedValuesList());
-                        clientBean.setClients(set);
-                        sendMessage(clientBean);
-                    }
-                }
-            }
-        });
-
     }
 
     private void updateFirends() {
@@ -524,22 +486,11 @@ public class CatChatroom extends JFrame {
         List<FriendBean> friendBeanList = HibernateDao.query("select f from FriendBean f where f.user_name=?", new String[]{name});
         if (friendBeanList != null || friendBeanList.size() > 0) {
             for (FriendBean friendBean : friendBeanList) {
-                friends.add(friendBean.getFriend_name());
+                friends.add(friendBean.getNick_name());
             }
         }
 
     }
-//    private void updatetList(){
-//        for (Object item : friends) {
-//            if (onlines.contains(item)) {
-//                onlines.add(item);
-//            } else {
-//                onlines.add(item + "(离线)");
-//            }
-//        }
-//        listmodel = new UUListModel(onlines);
-//        list.setModel(listmodel);
-//    }
 
     class ClientInputThread extends Thread {
 

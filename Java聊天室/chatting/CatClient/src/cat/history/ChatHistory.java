@@ -3,6 +3,7 @@ package cat.history;
 
 import cat.dao.HibernateDao;
 import cat.function.ChatHistoryBean;
+import cat.function.FriendBean;
 import cat.login.CatLogin;
 
 import javax.swing.*;
@@ -75,8 +76,13 @@ public class ChatHistory extends JFrame {
                     JOptionPane.showMessageDialog(getContentPane(), "请选择要删除的聊天记录对象");
                     return;
                 }
-                delete(list.getSelectedIndices());
-                updateHistory();
+                int result = JOptionPane.showConfirmDialog(
+                        getContentPane(), "您确定要删除所选"+selected.size()+"条聊天记录");
+                if (result==0){
+                    delete(list.getSelectedIndices());
+                    updateHistory();
+                }
+
             }
         });
     }

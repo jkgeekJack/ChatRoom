@@ -88,6 +88,7 @@ public class CatResign extends JFrame {
 		passwordField_1.setBounds(150, 140, 200, 30);
 		passwordField_1.setFont(font);
 		passwordField_1.setBorder(border);
+		passwordField_1.setEchoChar('*');
 		passwordField_1.setToolTipText("确认密码");
 		contentPane.add(passwordField_1);
 		JLabel jLabe3=new JLabel(new ImageIcon("images/password.png"));
