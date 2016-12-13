@@ -21,5 +21,5 @@
 ![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/2.png?raw=true) 
 ![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/8.png?raw=true) 
 ![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/18.png?raw=true) 
-![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot20.png?raw=true) 
+![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/20.png?raw=true) 
 
