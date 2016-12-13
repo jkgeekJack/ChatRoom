@@ -16,10 +16,10 @@
 4. UI采用Swing
 
 ##软件截图
-![](/home/xjk/IdeaProjects/ChattingRoom/Java聊天室/screenshot/1.png) 
-![](/home/xjk/IdeaProjects/ChattingRoom/Java聊天室/screenshot/4.png) 
-![](/home/xjk/IdeaProjects/ChattingRoom/Java聊天室/screenshot/2.png) 
-![](/home/xjk/IdeaProjects/ChattingRoom/Java聊天室/screenshot/8.png) 
-![](/home/xjk/IdeaProjects/ChattingRoom/Java聊天室/screenshot/18.png) 
-![](/home/xjk/IdeaProjects/ChattingRoom/Java聊天室/screenshot/20.png) 
+![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/1.png?raw=true) 
+![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/4.png?raw=true) 
+![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/2.png?raw=true) 
+![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/8.png?raw=true) 
+![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot/18.png?raw=true) 
+![](https://github.com/jkgeekJack/ChatRoom/blob/neworigin/Java%E8%81%8A%E5%A4%A9%E5%AE%A4/screenshot20.png?raw=true) 
 
